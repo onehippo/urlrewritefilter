@@ -1,3 +1,11 @@
+#Hippo  UrlRewriteFilter changes
+
+This repository contains Hippo-specific modifications of UrlRewriteFilter.
+
+
+
+### The remainder of this file contains the unmodified UrlRewriteFilter README
+
 
 # UrlRewriteFilter
 
