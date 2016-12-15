@@ -42,6 +42,19 @@
         <connection>scm:git:git://github.com/onehippo/urlrewritefilter.git</connection>
         <developerConnection>scm:git:git@github.com:onehippo/urlrewritefilter.git</developerConnection>
     </scm>
+    <repositories>
+        <repository>
+            <id>hippo-maven2</id>
+            <name>Hippo Maven 2</name>
+            <url>http://maven.onehippo.com/maven2/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+    </repositories>
 
     <developers>
         <developer>
