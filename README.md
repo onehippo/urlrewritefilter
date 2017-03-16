@@ -1,4 +1,4 @@
-# Hippo UrlRewriteFilter changes
+# Hippo-Specific UrlRewriteFilter
 
 This repository is a fork of [paultuckey/urlrewritefilter](https://github.com/paultuckey/urlrewritefilter) and contains 
 Hippo-specific modifications of UrlRewriteFilter. See [FORK_INFO.md](FORK_INFO.md). 
@@ -9,6 +9,7 @@ After cloning this repository, please set the upstream like this:
 
 **The remainder of this file contains the unmodified UrlRewriteFilter README**
 
+*****
 
 # UrlRewriteFilter
 
