@@ -28,6 +28,15 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <mailingLists>
+        <mailingList>
+            <name>UrlRewrite users</name>
+            <post>urlrewrite@googlegroups.com</post>
+            <subscribe>urlrewrite+subscribe@googlegroups.com</subscribe>
+            <unsubscribe>urlrewrite+unsubscribe@googlegroups.com</unsubscribe>
+            <archive>https://groups.google.com/d/forum/urlrewrite</archive>
+        </mailingList>
+    </mailingLists>
 
     <licenses>
         <license>
@@ -42,19 +51,6 @@
         <connection>scm:git:git://github.com/onehippo/urlrewritefilter.git</connection>
         <developerConnection>scm:git:git@github.com:onehippo/urlrewritefilter.git</developerConnection>
     </scm>
-    <repositories>
-        <repository>
-            <id>hippo-maven2</id>
-            <name>Hippo Maven 2</name>
-            <url>http://maven.onehippo.com/maven2/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-    </repositories>
 
     <developers>
         <developer>
@@ -62,6 +58,9 @@
         </developer>
     </developers>
 
+    <issueManagement>
+        <url>https://issues.onehippo.com/projects/HIPPLUG</url>
+    </issueManagement>
 
     <build>
         <resources>
@@ -106,7 +105,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.3</version>
                 <configuration>
-                    <tagBase>https://github.com/paultuckey/urlrewritefilter/tags</tagBase>
+                    <tagBase>https://github.com/onehippo/urlrewritefilter/tags</tagBase>
                 </configuration>
             </plugin>
             <plugin>
