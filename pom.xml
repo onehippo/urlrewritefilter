@@ -4,7 +4,7 @@
     <groupId>org.tuckey</groupId>
     <artifactId>urlrewritefilter</artifactId>
     <packaging>jar</packaging>
-    <version>4.0.5-SNAPSHOT</version>
+    <version>4.0.4-h1-SNAPSHOT</version>
     <name>UrlRewriteFilter</name>
     <url>http://www.tuckey.org/urlrewrite/</url>
     <inceptionYear>2001</inceptionYear>
@@ -27,16 +27,6 @@
         <app.year>2012</app.year>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
-
-    <mailingLists>
-        <mailingList>
-            <name>UrlRewrite users</name>
-            <post>urlrewrite@googlegroups.com</post>
-            <subscribe>urlrewrite+subscribe@googlegroups.com</subscribe>
-            <unsubscribe>urlrewrite+unsubscribe@googlegroups.com</unsubscribe>
-            <archive>https://groups.google.com/d/forum/urlrewrite</archive>
-        </mailingList>
-    </mailingLists>
 
     <licenses>
         <license>
@@ -98,7 +88,7 @@
                 </executions>
                 <configuration>
                     <doCheck>false</doCheck>
-                    <doUpdate>true</doUpdate>
+                    <doUpdate>false</doUpdate>
                 </configuration>
             </plugin>
             <plugin>
