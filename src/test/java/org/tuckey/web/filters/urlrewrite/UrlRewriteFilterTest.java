@@ -67,8 +67,10 @@ public class UrlRewriteFilterTest extends TestCase {
 
     public void testVersion() throws ServletException {
         String ver = UrlRewriteFilter.getFullVersionString();
-        System.out.println(ver);
-        assertTrue("Ver bad " + ver, ver.matches("[0-9]+(\\.[0-9])+(-SNAPSHOT)? build [a-f,0-9]+"));
+//        System.out.println(ver);
+
+        // Hippo format
+        assertTrue("Version does not have 'x.y.z-hN' format: " + ver, ver.matches("([0-9])(\\.[0-9])+(-h[0-9])(-SNAPSHOT)? build [a-f,0-9]+"));
     }
 
     public void testInitContext() throws ServletException {

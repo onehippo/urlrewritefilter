@@ -14,7 +14,10 @@ public final class RewriteUtils {
     }
 
     /**
-     * Not very efficient but good enough(100_000 rules ~4 sec), but we need to encode each character..
+     * Hippo modification on behalf of non-ASCII characters, see issue HIPPLUG-1419.
+     *
+     * No longer actually encoding 'parts' but we need to encode each character separately.
+     * Not very efficient but good enough (100_000 rules ~4 sec),
      */
     public static String uriEncodeParts(final String value) {
         if (Strings.isNullOrEmpty(value)) {
@@ -38,12 +41,15 @@ public final class RewriteUtils {
         try {
             return URI.create(String.valueOf(c)).toASCIIString();
         } catch (Exception e) {
-            log.error("Error parsing character: ", e);
+            log.error("Error parsing character '" + c + "'", e);
         }
         return String.valueOf(c);
     }
 
 
+    /**
+     * Hippo addition on behalf of non-ASCII characters, see issue HIPPLUG-1419
+     */
     public static String encodeRedirect(final String target) {
         boolean allAscii = CharMatcher.ASCII.matchesAllOf(target);
         if (!allAscii) {

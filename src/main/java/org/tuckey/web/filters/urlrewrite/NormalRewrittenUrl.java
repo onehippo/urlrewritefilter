@@ -238,6 +238,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
                 if (isEncode()) {
                     target = hsResponse.encodeRedirectURL(target);
                 }
+                // HIPPLUG-1419 Hippo modification on behalf of non-ASCII characters
                 target = RewriteUtils.encodeRedirect(target);
                 hsResponse.sendRedirect(target);
                 if (log.isTraceEnabled()) {
@@ -254,6 +255,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
                 if (isEncode()) {
                     target = hsResponse.encodeRedirectURL(target);
                 }
+                // HIPPLUG-1419 Hippo modification on behalf of non-ASCII characters
                 target = RewriteUtils.encodeRedirect(target);
                 hsResponse.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
 
@@ -273,6 +275,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
                 if (isEncode()) {
                     target = hsResponse.encodeRedirectURL(target);
                 }
+                // HIPPLUG-1419 Hippo modification on behalf of non-ASCII characters
                 target = RewriteUtils.encodeRedirect(target);
                 hsResponse.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
                 hsResponse.setHeader("Location", target);
