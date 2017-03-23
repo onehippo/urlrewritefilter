@@ -42,6 +42,21 @@
         <developerConnection>scm:git:git@github.com:onehippo/urlrewritefilter.git</developerConnection>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <name>Hippo Maven 2 Repository</name>
+            <id>hippo-maven2</id>
+            <url>https://maven.onehippo.com/content/repositories/releases/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </repository>
+        <snapshotRepository>
+            <id>hippo-maven2-snapshots</id>
+            <name>Hippo Maven 2 Snapshots Repository</name>
+            <url>https://maven.onehippo.com/content/repositories/snapshots/</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+
     <developers>
         <developer>
             <name>Paul Tuckey</name>
