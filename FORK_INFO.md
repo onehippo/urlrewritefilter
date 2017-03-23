@@ -27,5 +27,5 @@ Then applied:
 
 Additionally:
 - Upgrade to Java 8
-- Update versions of dependencies
+- Use `org.onehippo.cms7:hippo-cms7-project` as parent pom, for plugin version management 
 - [HIPPLUG-1419](https://issues.onehippo.com/browse/HIPPLUG-1419): fix escaping in case of non-ASCII characters, e.g. Cyrillic.
