@@ -14,7 +14,7 @@ For example, version `4.0.4-h1` extends urlrewritefilter `4.0.4`.
 ## Releases
 
 ### Release 4.0.4-h1
-_Release Date: 21 March 2017_
+_Release Date: 23 March 2017_
 
 Based on master 4.0.5-SNAPSHOT from March 2017, already including:
 - [Issue 116: qsappend fix](https://github.com/paultuckey/urlrewritefilter/issues/116)
@@ -26,6 +26,6 @@ Then applied:
 - [Issue 207: Condition type "request-filename" returns path with double context-path](https://github.com/paultuckey/urlrewritefilter/issues/207)
 
 Additionally:
-- Upgraded to Java 8
+- Upgrade to Java 8
 - Update versions of dependencies
-- [HIPPLUG-1419](https://issues.onehippo.com/browse/HIPPLUG-1419): fix escaping in case of non-ASCII characters
+- [HIPPLUG-1419](https://issues.onehippo.com/browse/HIPPLUG-1419): fix escaping in case of non-ASCII characters, e.g. Cyrillic.
