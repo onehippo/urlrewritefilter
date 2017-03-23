@@ -71,6 +71,7 @@ public class RuleBase implements Runnable {
     protected String name;
     private String note;
     protected String from;
+    protected String fromOriginal;
     protected String to;
     private boolean toEmpty;
     private String matchType;
@@ -376,11 +377,20 @@ public class RuleBase implements Runnable {
     }
 
     /**
+     * getter for original (not URI encoded string)
+     *
+     */
+    public String getFromOriginal() {
+        return fromOriginal;
+    }
+
+    /**
      * Will set from, usually called by Digester.
      *
      * @param from the url to match from
      */
     public void setFrom(final String from) {
+        this.fromOriginal = from;
         if (!Strings.isNullOrEmpty(from)) {
             this.from = RewriteUtils.uriEncodeParts(from);
         }

@@ -60,7 +60,7 @@ public class Status {
 
     private static Log log = Log.getLog(Status.class);
 
-    private StringBuffer buffer = new StringBuffer();
+    private StringBuffer buffer = new StringBuffer(1024*1024);
 
     private Conf conf;
     private UrlRewriteFilter urlRewriteFilter;
@@ -235,7 +235,8 @@ public class Status {
                     println("<dl><dd><p>" + StringUtils.nl2br(normalRule.getNote()) + "</p></dd></dl>");
                 }
 
-                print("<p>URL's matching <code>" + normalRule.getFrom() + "</code>");
+                final String fromOriginal = normalRule.getFromOriginal();
+                print("<p>URL's matching <code>" + fromOriginal + "</code>");
                 if (normalRule.isFilter()) {
                     print(" (filter)");
                 }
@@ -261,6 +262,10 @@ public class Status {
                 if (!rule.isLast()) {
                     println("<p>Note, other rules will be processed after this rule.</p>");
                 }
+                if (fromOriginal != null && !fromOriginal.equals(normalRule.getFrom())) {
+                    println("<p>URI encoded from:  <code>" + normalRule.getFrom() + "</code></p>");
+                }
+
             }
             if (rule instanceof ClassRule) {
                 ClassRule classRule = (ClassRule) rule;
@@ -279,7 +284,8 @@ public class Status {
             if (!StringUtils.isBlank(rule.getNote())) {
                 println("<dl><dd><p>" + StringUtils.nl2br(rule.getNote()) + "</p></dd></dl>");
             }
-            print("<p>Outbound URL's matching <code>" + rule.getFrom() + "</code>");
+            final String fromOriginal = rule.getFromOriginal();
+            print("<p>Outbound URL's matching <code>" + fromOriginal + "</code>");
             if (!StringUtils.isBlank(rule.getTo())) {
                 print(" will be rewritten to <code>" + rule.getTo() + "</code>");
             }
@@ -297,6 +303,9 @@ public class Status {
 
             if (!rule.isLast()) {
                 println("<p>Note, other outbound rules will be processed after this rule.</p>");
+            }
+            if (fromOriginal != null && !fromOriginal.equals(rule.getFrom())) {
+                println("<p>URI encoded from:  <code>" + rule.getFrom() + "</code></p>");
             }
             println();
             println();
@@ -404,8 +413,7 @@ public class Status {
     }
 
     private void displayRuleCondSetRun(List<Condition> conditions, List<SetAttribute> sets, List<Run> runs) {
-        for (Object condition1 : conditions) {
-            Condition condition = (Condition) condition1;
+        for (Condition condition: conditions) {
             if (condition.getError() == null) {
                 continue;
             }
@@ -505,14 +513,14 @@ public class Status {
     }
 
     private void showConditions(RuleBase rule) {
-        List conditions = rule.getConditions();
+        List<Condition> conditions = rule.getConditions();
         if (conditions.size() == 0) return;
 
         println("<p>Given that the following condition" +
                 (conditions.size() == 1 ? " is" : "s are") + " met.</p>" +
                 "<ol>");
         for (int j = 0; j < conditions.size(); j++) {
-            Condition condition = (Condition) conditions.get(j);
+            Condition condition = conditions.get(j);
             println("<li>");
             if ("header".equals(condition.getType())) {
                 println("The <code>" + condition.getName() + "</code> HTTP header " +
