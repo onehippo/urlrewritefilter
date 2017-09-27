@@ -33,7 +33,9 @@ public class ValidationUtilsTest {
     @Test(expected = IllegalArgumentException.class)
     public void validateNewLinesKeyValue1() {
         ValidationUtils.validateNewLines("test", "foo\nbar");
-    }   @Test(expected = IllegalArgumentException.class)
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void validateNewLinesKeyValue11() {
         ValidationUtils.validateNewLines("te\nst", "foobar");
     }
