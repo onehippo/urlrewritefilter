@@ -60,7 +60,7 @@ public class Status {
 
     private static Log log = Log.getLog(Status.class);
 
-    private StringBuffer buffer = new StringBuffer(1024*1024);
+    private StringBuffer buffer = new StringBuffer(1024 * 1024);
 
     private Conf conf;
     private UrlRewriteFilter urlRewriteFilter;
@@ -97,20 +97,32 @@ public class Status {
         println("<pre>");
 
         println("method: " + hsRequest.getMethod());
-        if (hsRequest.getAuthType() != null) println("auth-type: " + hsRequest.getAuthType());
-        if (hsRequest.getCharacterEncoding() != null)
+        if (hsRequest.getAuthType() != null) {
+            println("auth-type: " + hsRequest.getAuthType());
+        }
+        if (hsRequest.getCharacterEncoding() != null) {
             println("character-encoding: " + hsRequest.getCharacterEncoding());
+        }
         println("context-path: " + hsRequest.getContextPath());
-        if (hsRequest.getPathInfo() != null) println("path-info: " + hsRequest.getPathInfo());
-        if (hsRequest.getPathTranslated() != null) println("path-translated: " + hsRequest.getPathTranslated());
+        if (hsRequest.getPathInfo() != null) {
+            println("path-info: " + hsRequest.getPathInfo());
+        }
+        if (hsRequest.getPathTranslated() != null) {
+            println("path-translated: " + hsRequest.getPathTranslated());
+        }
         println("port: " + hsRequest.getServerPort());
         println("protocol: " + hsRequest.getProtocol());
-        if (hsRequest.getQueryString() != null) println("query-string: " + hsRequest.getQueryString());
+        if (hsRequest.getQueryString() != null) {
+            println("query-string: " + hsRequest.getQueryString());
+        }
         println("remote-addr: " + hsRequest.getRemoteAddr());
         println("remote-host: " + hsRequest.getRemoteHost());
-        if (hsRequest.getRemoteUser() != null) println("remote-user: " + hsRequest.getRemoteUser());
-        if (hsRequest.getRequestedSessionId() != null)
+        if (hsRequest.getRemoteUser() != null) {
+            println("remote-user: " + hsRequest.getRemoteUser());
+        }
+        if (hsRequest.getRequestedSessionId() != null) {
             println("requested-session-id: " + hsRequest.getRequestedSessionId());
+        }
         println("request-uri: " + hsRequest.getRequestURI());
         println("request-url: " + hsRequest.getRequestURL());
         println("server-name: " + hsRequest.getServerName());
@@ -136,7 +148,9 @@ public class Status {
         while (headers.hasMoreElements()) {
             final String headerName = (String) headers.nextElement();
             // ignore cookies as they are handled later
-            if ("cookie".equals(headerName)) continue;
+            if ("cookie".equals(headerName)) {
+                continue;
+            }
             println(headerName + ": " + hsRequest.getHeader(headerName));
         }
         println("</pre>");
@@ -147,7 +161,9 @@ public class Status {
             for (int i = 0; i < cookies.length; i++) {
                 println("<h5>Cookie " + i + "</h5>");
                 final Cookie cookie = cookies[i];
-                if (cookie == null) continue;
+                if (cookie == null) {
+                    continue;
+                }
                 println("<pre>");
                 println("    name     : " + cookie.getName());
                 println("    value    : " + cookie.getValue());
@@ -180,10 +196,14 @@ public class Status {
     }
 
     private void showConf() {
-        if (conf == null) return;
+        if (conf == null) {
+            return;
+        }
 
         println("<h2>Summary");
-        if (conf.isLoadedFromFile()) println(" of " + conf.getFileName());
+        if (conf.isLoadedFromFile()) {
+            println(" of " + conf.getFileName());
+        }
         println("</h2>");
 
         if (!conf.isOk()) {
@@ -317,24 +337,35 @@ public class Status {
         println("<!DOCTYPE html>");
         println("<html lang=\"en\">");
         println("<head>");
-        if ( conf == null ) {
+        if (conf == null) {
             println("<title>UrlRewriteFilter configuration overview</title>");
         } else {
             println("<title>UrlRewriteFilter configuration overview for " + conf.getFileName() + "</title>");
         }
         println("<style type=\"text/css\">");
-        InputStream is = Status.class.getResourceAsStream("doc/doc.css");
-        if (is == null) {
-            log.warn("unable to load style sheet");
-        } else {
-            try {
+
+        InputStream is = null;
+        try {
+            is = Status.class.getResourceAsStream("doc/doc.css");
+            if (is == null) {
+                log.warn("unable to load style sheet");
+            } else {
                 for (int i = is.read(); i != -1; i = is.read()) {
                     buffer.append((char) i);
                 }
-            } catch (IOException e) {
-                // don't care about this too much
+            }
+        } catch (IOException e) {
+            // don't care about this too much
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ignore) {
+                    // ignore
+                }
             }
         }
+
         println("</style>");
         println("<body>");
         println("<h1><a href=\"http://www.tuckey.org/urlrewrite/\">UrlRewriteFilter</a> " +
@@ -347,13 +378,19 @@ public class Status {
         println("<h2>Running Status</h2>");
         if (conf == null) {
             println("<h3 class=\"err\">ERROR: UrlRewriteFilter failed to load config, check server log</h3>");
-        }   else if (!conf.isOk()) {
+        } else if (!conf.isOk()) {
             println("<h3 class=\"err\">ERROR: UrlRewriteFilter NOT ACTIVE</h3>");
         }
         println("<p>Conf");
-        if (conf == null ) println(" <em>empty</em>.</p>");
-        if (conf != null && conf.isLoadedFromFile()) println("file <code>" + conf.getFileName() + "</code>");
-        if (conf != null ) println("loaded <em>" + conf.getLoadedDate() + "</em>.</p>");
+        if (conf == null) {
+            println(" <em>empty</em>.</p>");
+        }
+        if (conf != null && conf.isLoadedFromFile()) {
+            println("file <code>" + conf.getFileName() + "</code>");
+        }
+        if (conf != null) {
+            println("loaded <em>" + conf.getLoadedDate() + "</em>.</p>");
+        }
         if (urlRewriteFilter != null) {
             if (urlRewriteFilter.isConfReloadCheckEnabled()) {
                 Date nextReloadCheckDate = new Date(urlRewriteFilter.getConfReloadLastCheck().getTime() +
@@ -413,7 +450,7 @@ public class Status {
     }
 
     private void displayRuleCondSetRun(List<Condition> conditions, List<SetAttribute> sets, List<Run> runs) {
-        for (Condition condition: conditions) {
+        for (Condition condition : conditions) {
             if (condition.getError() == null) {
                 continue;
             }
@@ -452,7 +489,9 @@ public class Status {
     }
 
     private void showSets(final RuleBase rule) {
-        if (rule.getSetAttributes().size() == 0) return;
+        if (rule.getSetAttributes().size() == 0) {
+            return;
+        }
         final List<SetAttribute> setAttributes = rule.getSetAttributes();
         println("<p>This rule will set:</p>" +
                 "<ol>");
@@ -494,7 +533,9 @@ public class Status {
 
     private void showRuns(RuleBase rule) {
         List<Run> runs = rule.getRuns();
-        if (runs.size() == 0) return;
+        if (runs.size() == 0) {
+            return;
+        }
 
         println("<p>This rule will run:</p>" +
                 "<ol>");
@@ -514,7 +555,9 @@ public class Status {
 
     private void showConditions(RuleBase rule) {
         List<Condition> conditions = rule.getConditions();
-        if (conditions.size() == 0) return;
+        if (conditions.size() == 0) {
+            return;
+        }
 
         println("<p>Given that the following condition" +
                 (conditions.size() == 1 ? " is" : "s are") + " met.</p>" +

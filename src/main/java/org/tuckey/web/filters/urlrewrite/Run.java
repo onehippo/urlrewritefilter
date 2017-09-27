@@ -227,10 +227,6 @@ public class Run {
                     return null;
                 }
             }
-            if (paramClass == null) {
-                setError("could not find class of type " + param);
-                return null;
-            }
         }
         if (log.isDebugEnabled()) {
             log.debug("parseClass found class " + paramClass + " for " + param);
