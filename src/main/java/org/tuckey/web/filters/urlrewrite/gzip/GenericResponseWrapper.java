@@ -38,6 +38,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import org.tuckey.web.filters.urlrewrite.utils.Log;
+import org.tuckey.web.filters.urlrewrite.utils.ValidationUtils;
 
 
 /**
@@ -238,6 +239,10 @@ public class GenericResponseWrapper extends HttpServletResponseWrapper implement
      * Adds a cookie.
      */
     public void addCookie(final Cookie cookie) {
+        if (cookie == null) {
+            return;
+        }
+        ValidationUtils.validateNewLines(cookie.getName(), cookie.getValue());
         cookies.add(cookie);
         super.addCookie(cookie);
     }
