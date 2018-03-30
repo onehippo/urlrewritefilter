@@ -34,8 +34,15 @@
  */
 package org.tuckey.web.filters.urlrewrite;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.*;
+import org.apache.http.*;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.tuckey.web.filters.urlrewrite.utils.Log;
 import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
 
@@ -45,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
@@ -102,7 +110,7 @@ public final class RequestProxy {
         }
 
         log.info("checking url");
-        final URL url;
+        URL url;
         try {
             url = new URL(target);
         } catch (MalformedURLException e) {
@@ -110,58 +118,63 @@ public final class RequestProxy {
             return;
         }
 
-        log.info("seting up the host configuration");
+        log.info("setting up the host configuration");
 
-        final HostConfiguration config = new HostConfiguration();
+        RequestConfig.Builder configBuilder = RequestConfig.custom();
 
-        ProxyHost proxyHost = getUseProxyServer((String) hsRequest.getAttribute("use-proxy"));
-        if (proxyHost != null) {
-            config.setProxyHost(proxyHost);
-        }
-
-        final int port = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
-        config.setHost(url.getHost(), port, url.getProtocol());
+        HttpHost proxyHost = getUseProxyServer((String) hsRequest.getAttribute("use-proxy"));
+        if (proxyHost != null) configBuilder.setProxy(proxyHost);
+        RequestConfig config = configBuilder.build();
 
         if (log.isInfoEnabled()) {
             log.info("config is " + config.toString());
         }
 
-        final HttpMethod targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
+        final int port = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
+        url = new URL( url.getProtocol(), url.getHost(), port, url.getFile());
+
+        final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
         if (targetRequest == null) {
             log.error("Unsupported request method found: " + hsRequest.getMethod());
             return;
         }
 
-        //perform the reqeust to the target server
-        final HttpClient client = new HttpClient(new SimpleHttpConnectionManager());
-        if (log.isInfoEnabled()) {
-            log.info("client state" + client.getState());
-            log.info("client params" + client.getParams().toString());
-            log.info("executeMethod / fetching data ...");
+        //perform the request to the target server
+        try (CloseableHttpClient client = HttpClients.custom()
+                .setDefaultRequestConfig(config)
+                .setConnectionManager(new BasicHttpClientConnectionManager())
+                .build()) {
+            if (log.isInfoEnabled()) {
+                log.info("executeMethod / fetching data ...");
+            }
+
+            // holder variable, mainly to allow use of try-with-resources below
+            HttpUriRequest requestParam = targetRequest;
+
+            if (targetRequest instanceof HttpEntityEnclosingRequestBase) {
+                final InputStreamEntity entity = new InputStreamEntity(
+                        hsRequest.getInputStream(), hsRequest.getContentLength(), ContentType.create(hsRequest.getContentType()));
+                final HttpEntityEnclosingRequestBase entityEnclosingMethod = (HttpEntityEnclosingRequestBase) targetRequest;
+                entityEnclosingMethod.setEntity(entity);
+                requestParam = entityEnclosingMethod;
+            }
+
+            try (CloseableHttpResponse response = client.execute(requestParam)) {
+
+                //copy the target response headers to our response
+                setupResponseHeaders(targetRequest, response, hsResponse, dropCookies);
+
+                InputStream originalResponseStream = response.getEntity().getContent();
+                //the body might be null, i.e. for responses with cache-headers which leave out the body
+                if (originalResponseStream != null) {
+                    OutputStream responseStream = hsResponse.getOutputStream();
+                    copyStream(originalResponseStream, responseStream);
+                }
+                EntityUtils.consume(response.getEntity());
+
+                log.info("set up response, result code was " + response.getStatusLine().getStatusCode());
+            }
         }
-
-        final int result;
-        if (targetRequest instanceof EntityEnclosingMethod) {
-            final RequestProxyCustomRequestEntity requestEntity = new RequestProxyCustomRequestEntity(hsRequest.getInputStream(), hsRequest.getContentLength(), hsRequest.getContentType());
-            final EntityEnclosingMethod entityEnclosingMethod = (EntityEnclosingMethod) targetRequest;
-            entityEnclosingMethod.setRequestEntity(requestEntity);
-            result = client.executeMethod(config, entityEnclosingMethod);
-
-        } else {
-            result = client.executeMethod(config, targetRequest);
-        }
-
-        //copy the target response headers to our response
-        setupResponseHeaders(targetRequest, hsResponse, dropCookies);
-
-        InputStream originalResponseStream = targetRequest.getResponseBodyAsStream();
-        //the body might be null, i.e. for responses with cache-headers which leave out the body
-        if (originalResponseStream != null) {
-            OutputStream responseStream = hsResponse.getOutputStream();
-            copyStream(originalResponseStream, responseStream);
-        }
-
-        log.info("set up response, result code was " + result);
     }
 
     public static void copyStream(InputStream in, OutputStream out) throws IOException {
@@ -173,52 +186,60 @@ public final class RequestProxy {
     }
 
 
-    public static ProxyHost getUseProxyServer(String useProxyServer) {
-        ProxyHost proxyHost = null;
+    public static HttpHost getUseProxyServer(String useProxyServer) {
+        HttpHost proxyHost = null;
         if (useProxyServer != null) {
             String proxyHostStr = useProxyServer;
             int colonIdx = proxyHostStr.indexOf(':');
             if (colonIdx != -1) {
                 proxyHostStr = proxyHostStr.substring(0, colonIdx);
                 String proxyPortStr = useProxyServer.substring(colonIdx + 1);
-                if (proxyPortStr.length() > 0 && NUMBER_PATTERN.matcher(proxyPortStr).matches()) {
+                if (proxyPortStr != null && proxyPortStr.length() > 0 && NUMBER_PATTERN.matcher(proxyPortStr).matches()) {
                     int proxyPort = Integer.parseInt(proxyPortStr);
-                    proxyHost = new ProxyHost(proxyHostStr, proxyPort);
+                    proxyHost = new HttpHost(proxyHostStr, proxyPort);
                 } else {
-                    proxyHost = new ProxyHost(proxyHostStr);
+                    proxyHost = new HttpHost(proxyHostStr, 80/*default port*/);
                 }
             } else {
-                proxyHost = new ProxyHost(proxyHostStr);
+                proxyHost = new HttpHost(proxyHostStr);
             }
         }
         return proxyHost;
     }
 
-    private static HttpMethod setupProxyRequest(final HttpServletRequest hsRequest, final URL targetUrl, boolean dropCookies) throws IOException {
+    private static HttpRequestBase setupProxyRequest(final HttpServletRequest hsRequest, final URL targetUrl, boolean dropCookies) throws IOException {
         final String methodName = hsRequest.getMethod();
-        final HttpMethod method;
+        final HttpRequestBase method;
         if ("POST".equalsIgnoreCase(methodName)) {
-            PostMethod postMethod = new PostMethod();
-            InputStreamRequestEntity inputStreamRequestEntity = new InputStreamRequestEntity(hsRequest.getInputStream());
-            postMethod.setRequestEntity(inputStreamRequestEntity);
+            HttpPost postMethod = new HttpPost();
+            HttpEntity inputStreamRequestEntity = new InputStreamEntity(hsRequest.getInputStream());
+            postMethod.setEntity(inputStreamRequestEntity);
             method = postMethod;
         } else if ("GET".equalsIgnoreCase(methodName)) {
-            method = new GetMethod();
+            method = new HttpGet();
         } else if ("PUT".equalsIgnoreCase(methodName)) {
-            PutMethod putMethod = new PutMethod();
-            InputStreamRequestEntity inputStreamRequestEntity = new InputStreamRequestEntity(hsRequest.getInputStream());
-            putMethod.setRequestEntity(inputStreamRequestEntity);
+            HttpPut putMethod = new HttpPut();
+            HttpEntity inputStreamRequestEntity = new InputStreamEntity(hsRequest.getInputStream());
+            putMethod.setEntity(inputStreamRequestEntity);
             method = putMethod;
         } else if ("DELETE".equalsIgnoreCase(methodName)) {
-            method = new DeleteMethod();
+            method = new HttpDelete();
         } else {
             log.warn("Unsupported HTTP method requested: " + hsRequest.getMethod());
             return null;
         }
 
-        method.setFollowRedirects(false);
-        method.setPath(targetUrl.getPath());
-        method.setQueryString(targetUrl.getQuery());
+        RequestConfig config = RequestConfig.custom()
+                .setRedirectsEnabled(false)
+                .build();
+
+        method.setConfig(config);
+        try {
+            method.setURI(targetUrl.toURI());
+        }
+        catch(URISyntaxException e) {
+            throw new IOException(e);
+        }
 
         Enumeration e = hsRequest.getHeaderNames();
         if (e != null) {
@@ -244,28 +265,26 @@ public final class RequestProxy {
                 while (values.hasMoreElements()) {
                     String headerValue = (String) values.nextElement();
                     log.info("setting proxy request parameter:" + headerName + ", value: " + headerValue);
-                    method.addRequestHeader(headerName, headerValue);
+                    method.addHeader(headerName, headerValue);
                 }
             }
         }
 
-        if (log.isInfoEnabled()) {
-            log.info("proxy query string " + method.getQueryString());
-        }
+        if ( log.isInfoEnabled() ) log.info("proxy query string " + method.getRequestLine());
         return method;
     }
 
-    private static void setupResponseHeaders(HttpMethod httpMethod, HttpServletResponse hsResponse, boolean dropCookies) {
-        if (log.isInfoEnabled()) {
+    private static void setupResponseHeaders(HttpRequestBase httpMethod, CloseableHttpResponse httpResponse, HttpServletResponse hsResponse, boolean dropCookies) {
+        if ( log.isInfoEnabled() ) {
             log.info("setupResponseHeaders");
-            log.info("status text: " + httpMethod.getStatusText());
-            log.info("status line: " + httpMethod.getStatusLine());
+            log.info("status text: " + httpResponse.getStatusLine().getReasonPhrase());
+            log.info("status line: " + httpResponse.getStatusLine().getStatusCode());
         }
 
         //filter the headers, which are copied from the proxy response. The http lib handles those itself.
         //Filtered out: the content encoding, the content length and cookies
-        for (int i = 0; i < httpMethod.getResponseHeaders().length; i++) {
-            Header h = httpMethod.getResponseHeaders()[i];
+        for (int i = 0; i < httpMethod.getAllHeaders().length; i++) {
+            Header h = httpMethod.getAllHeaders()[i];
             if ("content-encoding".equalsIgnoreCase(h.getName())) {
                 continue;
             } else if ("content-length".equalsIgnoreCase(h.getName())) {
@@ -289,49 +308,8 @@ public final class RequestProxy {
         }
         //fixme what about the response footers? (httpMethod.getResponseFooters())
 
-        if (httpMethod.getStatusCode() != 200) {
-            hsResponse.setStatus(httpMethod.getStatusCode());
+        if (httpResponse.getStatusLine().getStatusCode() != 200) {
+            hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
         }
-    }
-}
-
-/**
- * @author Gunnar Hillert
- */
-class RequestProxyCustomRequestEntity implements RequestEntity {
-
-    private InputStream is = null;
-    private long contentLength = 0;
-    private String contentType;
-
-    public RequestProxyCustomRequestEntity(InputStream is, long contentLength, String contentType) {
-        this.is = is;
-        this.contentLength = contentLength;
-        this.contentType = contentType;
-    }
-
-    public boolean isRepeatable() {
-        return true;
-    }
-
-    public String getContentType() {
-        return this.contentType;
-    }
-
-    public void writeRequest(OutputStream out) throws IOException {
-
-        try {
-            int l;
-            byte[] buffer = new byte[10240];
-            while ((l = is.read(buffer)) != -1) {
-                out.write(buffer, 0, l);
-            }
-        } finally {
-            is.close();
-        }
-    }
-
-    public long getContentLength() {
-        return this.contentLength;
     }
 }
