@@ -29,3 +29,12 @@ Additionally:
 - Upgrade to Java 8
 - Use `org.onehippo.cms7:hippo-cms7-project` as parent pom, for plugin version management 
 - [HIPPLUG-1419](https://issues.onehippo.com/browse/HIPPLUG-1419): fix escaping in case of non-ASCII characters, e.g. Cyrillic.
+
+### Release 4.0.4-h2
+_Release Date: 30 March 2017_
+
+Based on 4.0.4-h1 code tree, described above.
+
+Then added:
+- Validate for [CWE 113 attack](https://cwe.mitre.org/data/definitions/113.html)
+- Update to httpclient 4.5.5
