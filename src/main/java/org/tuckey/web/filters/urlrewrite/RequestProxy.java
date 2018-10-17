@@ -311,3 +311,4 @@ public final class RequestProxy {
 			hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
 		}
 	}
+}
