@@ -38,3 +38,11 @@ Based on 4.0.4-h1 code tree, described above.
 Then added:
 - Validate for [CWE 113 attack](https://cwe.mitre.org/data/definitions/113.html)
 - Update to httpclient 4.5.5
+
+### Release 4.0.4-h3
+_Release Date: 3 December 2018_
+
+Based on 4.0.4-h2 code tree, described above.
+
+Then added:
+- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565):Remove dependency on Guava

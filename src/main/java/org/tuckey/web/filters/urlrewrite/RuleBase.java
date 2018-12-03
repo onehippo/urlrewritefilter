@@ -34,7 +34,6 @@
  */
 package org.tuckey.web.filters.urlrewrite;
 
-import com.google.common.base.Strings;
 import org.tuckey.web.filters.urlrewrite.extend.RewriteMatch;
 import org.tuckey.web.filters.urlrewrite.substitution.*;
 import org.tuckey.web.filters.urlrewrite.utils.*;
@@ -391,7 +390,7 @@ public class RuleBase implements Runnable {
      */
     public void setFrom(final String from) {
         this.fromOriginal = from;
-        if (!Strings.isNullOrEmpty(from)) {
+        if (!StringUtils.isBlank(from)) {
             this.from = RewriteUtils.uriEncodeParts(from);
         }
     }

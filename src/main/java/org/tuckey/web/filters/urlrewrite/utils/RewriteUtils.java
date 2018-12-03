@@ -1,8 +1,5 @@
 package org.tuckey.web.filters.urlrewrite.utils;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
-
 import java.net.URI;
 
 public final class RewriteUtils {
@@ -20,14 +17,14 @@ public final class RewriteUtils {
      * Not very efficient but good enough (100_000 rules ~4 sec),
      */
     public static String uriEncodeParts(final String value) {
-        if (Strings.isNullOrEmpty(value)) {
+        if (StringUtils.isBlank(value)) {
             return value;
         }
         final int length = value.length();
         final StringBuilder builder = new StringBuilder(length << 1);
         for (int i = 0; i < length; i++) {
             final char c = value.charAt(i);
-            if (CharMatcher.ASCII.matches(c)) {
+            if (isASCII(c)) {
                 builder.append(String.valueOf(c));
             } else {
                 builder.append(encodeCharacter(c));
@@ -51,7 +48,7 @@ public final class RewriteUtils {
      * Hippo addition on behalf of non-ASCII characters, see issue HIPPLUG-1419
      */
     public static String encodeRedirect(final String target) {
-        boolean allAscii = CharMatcher.ASCII.matchesAllOf(target);
+        boolean allAscii = isAllASCII(target);
         if (!allAscii) {
             try {
                 return URI.create(target).toASCIIString();
@@ -60,5 +57,18 @@ public final class RewriteUtils {
             }
         }
         return target;
+    }
+
+    private static boolean isASCII(char c) {
+        return c <= '\u007f';
+    }
+
+    private static boolean isAllASCII(CharSequence sequence) {
+        for (int i = sequence.length() - 1; i >= 0; i--) {
+            if (!isASCII(sequence.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 }

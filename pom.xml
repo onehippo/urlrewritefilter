@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.onehippo.cms7</groupId>
         <artifactId>hippo-cms7-project</artifactId>
-        <version>28</version>
+        <version>28.11</version>
     </parent>
 
     <groupId>org.tuckey</groupId>
@@ -140,11 +140,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0</version>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

@@ -34,8 +34,6 @@
  */
 package org.tuckey.web.filters.urlrewrite.utils;
 
-import com.google.common.base.Strings;
-
 import java.util.regex.Pattern;
 
 /**
@@ -63,7 +61,7 @@ public final class StringUtils {
             return null;
         }
         str = str.trim();
-        if (Strings.isNullOrEmpty(str)) {
+        if (str.isEmpty()) {
             return null;
         }
         return str;
