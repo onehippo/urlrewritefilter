@@ -179,7 +179,7 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         if (disallowedDuplicateHeaders == null || disallowedDuplicateHeaders.isEmpty()) {
             // just print warning for duplicates
             if (checkDuplicate(name)) {
-                log.warn("Duplicated header name for: " + name + ". Use debug level to print values");
+                log.warn("Adding duplicate header for name: " + name + " and value: " + value + ". Use debug level to print all values.");
             }
             super.addHeader(name, value);
             return;
@@ -187,7 +187,7 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         for (String disallowedName : disallowedDuplicateHeaders) {
             if (disallowedName.equals(name)) {
                 if (checkDuplicate(name)) {
-                    log.warn("Duplicated header name for: " + name + ". Use debug level to print values");
+                    log.warn("Adding duplicate header disallowed for name: " + name + " and value: " + value + ". Use debug level to print all values.");
                     return;
                 }
             }
@@ -201,7 +201,7 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         if (values != null && !values.isEmpty()) {
             if (log.isDebugEnabled()) {
                 for (final String v : values) {
-                    log.debug("(header, value):("+name +',' + v + ')');
+                    log.debug("checkDuplicate (header, value):("+name +',' + v + ')');
                 }
             }
             return true;
