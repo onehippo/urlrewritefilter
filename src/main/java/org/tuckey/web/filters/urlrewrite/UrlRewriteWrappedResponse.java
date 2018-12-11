@@ -173,21 +173,15 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
     public void setOverridenMethod(String overridenMethod) {
         this.overridenMethod = overridenMethod;
     }
-
-
+    
     @Override
     public void addHeader(final String name, final String value) {
-        setHeader(name, value);
-    }
-
-    @Override
-    public void setHeader(final String name, final String value) {
         if (disallowedDuplicateHeaders == null || disallowedDuplicateHeaders.isEmpty()) {
             // just print warning for duplicates
             if (checkDuplicate(name)) {
                 log.warn("Duplicated header name for: " + name + ". Use debug level to print values");
             }
-            super.setHeader(name, value);
+            super.addHeader(name, value);
             return;
         }
         for (String disallowedName : disallowedDuplicateHeaders) {
@@ -198,8 +192,9 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
                 }
             }
         }
-        super.setHeader(name, value);
+        super.addHeader(name, value);
     }
+    
 
     private boolean checkDuplicate(final String name) {
         final Collection<String> values = httpServletResponse.getHeaders(name);
