@@ -44,8 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.tuckey.web.filters.urlrewrite.utils.Log;
 
 /**
  * Handles wrapping the response so we can encode the url's on the way "out" (ie, in JSP or servlet generation).
@@ -55,7 +54,7 @@ import org.slf4j.LoggerFactory;
  */
 public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
 
-    private static final Logger log = LoggerFactory.getLogger(UrlRewriteWrappedResponse.class);
+    private static final Log log = Log.getLog(UrlRewriteWrappedResponse.class);
     private UrlRewriter urlRerwiter;
     private HttpServletResponse httpServletResponse;
     private HttpServletRequest httpServletRequest;
@@ -175,7 +174,7 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         this.overridenMethod = overridenMethod;
     }
 
-    
+
     @Override
     public void addHeader(final String name, final String value) {
         setHeader(name, value);
@@ -186,14 +185,15 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         if (disallowedDuplicateHeaders == null || disallowedDuplicateHeaders.isEmpty()) {
             // just print warning for duplicates
             if (checkDuplicate(name)) {
-                log.warn("Duplicated header name for: {}. Use debug level to print values", name);
+                log.warn("Duplicated header name for: " + name + ". Use debug level to print values");
             }
             super.setHeader(name, value);
+            return;
         }
         for (String disallowedName : disallowedDuplicateHeaders) {
             if (disallowedName.equals(name)) {
                 if (checkDuplicate(name)) {
-                    log.warn("Duplicated header name for: {}. Use debug level to print values", name);
+                    log.warn("Duplicated header name for: " + name + ". Use debug level to print values");
                     return;
                 }
             }
@@ -206,7 +206,7 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         if (values != null && !values.isEmpty()) {
             if (log.isDebugEnabled()) {
                 for (final String v : values) {
-                    log.debug("(header, value):({},{})", name, v);
+                    log.debug("(header, value):("+name +',' + v + ')');
                 }
             }
             return true;
