@@ -187,7 +187,7 @@ public class UrlRewriteWrappedResponse extends HttpServletResponseWrapper {
         for (String disallowedName : disallowedDuplicateHeaders) {
             if (disallowedName.equals(name)) {
                 if (checkDuplicate(name)) {
-                    log.warn("Adding duplicate header disallowed for name: " + name + " and value: " + value + ". Use debug level to print all values.");
+                    log.info("Adding duplicate header disallowed for name: " + name + " and value: " + value + ". Use debug level to print all values.");
                     return;
                 }
             }
