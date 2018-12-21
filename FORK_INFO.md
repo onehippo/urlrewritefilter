@@ -33,16 +33,17 @@ Additionally:
 ### Release 4.0.4-h2
 _Release Date: 30 March 2017_
 
-Based on 4.0.4-h1 code tree, described above.
-
-Then added:
 - Validate for [CWE 113 attack](https://cwe.mitre.org/data/definitions/113.html)
 - Update to httpclient 4.5.5
 
 ### Release 4.0.4-h3
 _Release Date: 3 December 2018_
 
-Based on 4.0.4-h2 code tree, described above.
+- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565): Remove dependency on Guava
 
-Then added:
-- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565):Remove dependency on Guava
+### Release 4.0.4-h4
+_Release Date: TBD_
+
+- [HIPPLUG-1570](https://issues.onehippo.com/browse/HIPPLUG-1570): add a facility to ``UrlRewriteWrappedResponse`` to 
+  inject disallowed duplicate header names. Method ``addHeader`` checks this to avoid the headers to be added twice.
+- Using javax servlet-api version 3.0.1  

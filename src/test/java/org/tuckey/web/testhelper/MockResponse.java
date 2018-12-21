@@ -42,6 +42,8 @@ import java.io.PrintWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
@@ -215,6 +217,16 @@ public class MockResponse implements HttpServletResponse {
 
     public String getHeader(String s) {
         return (String) responseHeaders.get(s);
+    }
+
+    @Override
+    public Collection<String> getHeaders(final String name) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Collection<String> getHeaderNames() {
+         return Collections.emptyList();
     }
 
     public int getStatus() {

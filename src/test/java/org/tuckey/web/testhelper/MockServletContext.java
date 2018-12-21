@@ -37,15 +37,24 @@ package org.tuckey.web.testhelper;
 import org.tuckey.web.filters.urlrewrite.UrlRewriteFilterTest;
 import org.tuckey.web.filters.urlrewrite.utils.Log;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.descriptor.JspConfigDescriptor;
+
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.EventListener;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -75,6 +84,16 @@ public class MockServletContext implements ServletContext {
     }
 
     public int getMinorVersion() {
+        return 0;
+    }
+
+    @Override
+    public int getEffectiveMajorVersion() {
+        return 0;
+    }
+
+    @Override
+    public int getEffectiveMinorVersion() {
         return 0;
     }
 
@@ -152,6 +171,11 @@ public class MockServletContext implements ServletContext {
         return null;
     }
 
+    @Override
+    public boolean setInitParameter(final String name, final String value) {
+        return false;
+    }
+
     public Enumeration getAttributeNames() {
         return null;
     }
@@ -171,5 +195,120 @@ public class MockServletContext implements ServletContext {
 
     public String getServletContextName() {
         return null;
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(final String servletName, final String className) {
+        return null;
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(final String servletName, final Servlet servlet) {
+        return null;
+    }
+
+    @Override
+    public ServletRegistration.Dynamic addServlet(final String servletName, final Class<? extends Servlet> servletClass) {
+        return null;
+    }
+
+    @Override
+    public <T extends Servlet> T createServlet(final Class<T> clazz) throws ServletException {
+        return null;
+    }
+
+    @Override
+    public ServletRegistration getServletRegistration(final String servletName) {
+        return null;
+    }
+
+    @Override
+    public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+        return null;
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(final String filterName, final String className) {
+        return null;
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(final String filterName, final Filter filter) {
+        return null;
+    }
+
+    @Override
+    public FilterRegistration.Dynamic addFilter(final String filterName, final Class<? extends Filter> filterClass) {
+        return null;
+    }
+
+    @Override
+    public <T extends Filter> T createFilter(final Class<T> clazz) throws ServletException {
+        return null;
+    }
+
+    @Override
+    public FilterRegistration getFilterRegistration(final String filterName) {
+        return null;
+    }
+
+    @Override
+    public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
+        return null;
+    }
+
+    @Override
+    public SessionCookieConfig getSessionCookieConfig() {
+        return null;
+    }
+
+    @Override
+    public void setSessionTrackingModes(final Set<SessionTrackingMode> sessionTrackingModes) {
+
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
+        return null;
+    }
+
+    @Override
+    public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
+        return null;
+    }
+
+    @Override
+    public void addListener(final String className) {
+
+    }
+
+    @Override
+    public <T extends EventListener> void addListener(final T t) {
+
+    }
+
+    @Override
+    public void addListener(final Class<? extends EventListener> listenerClass) {
+
+    }
+
+    @Override
+    public <T extends EventListener> T createListener(final Class<T> clazz) throws ServletException {
+        return null;
+    }
+
+    @Override
+    public JspConfigDescriptor getJspConfigDescriptor() {
+        return null;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return getClass().getClassLoader();
+    }
+
+    @Override
+    public void declareRoles(final String... roleNames) {
+
     }
 }
