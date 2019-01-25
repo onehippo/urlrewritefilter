@@ -13,6 +13,24 @@ For example, version `4.0.4-h1` extends urlrewritefilter `4.0.4`.
 
 ## Releases
 
+### Release 4.0.4-h4
+_Release Date: 25 January 2019_
+
+- [HIPPLUG-1570](https://issues.onehippo.com/browse/HIPPLUG-1570): add a facility to ``UrlRewriteWrappedResponse`` to 
+  inject disallowed duplicate header names. Method ``addHeader`` checks this to avoid the headers to be added twice.
+- Using javax servlet-api version 3.0.1
+
+### Release 4.0.4-h3
+_Release Date: 3 December 2018_
+
+- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565): Remove dependency on Guava
+
+### Release 4.0.4-h2
+_Release Date: 30 March 2017_
+
+- Validate for [CWE 113 attack](https://cwe.mitre.org/data/definitions/113.html)
+- Update to httpclient 4.5.5
+
 ### Release 4.0.4-h1
 _Release Date: 23 March 2017_
 
@@ -29,21 +47,3 @@ Additionally:
 - Upgrade to Java 8
 - Use `org.onehippo.cms7:hippo-cms7-project` as parent pom, for plugin version management 
 - [HIPPLUG-1419](https://issues.onehippo.com/browse/HIPPLUG-1419): fix escaping in case of non-ASCII characters, e.g. Cyrillic.
-
-### Release 4.0.4-h2
-_Release Date: 30 March 2017_
-
-- Validate for [CWE 113 attack](https://cwe.mitre.org/data/definitions/113.html)
-- Update to httpclient 4.5.5
-
-### Release 4.0.4-h3
-_Release Date: 3 December 2018_
-
-- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565): Remove dependency on Guava
-
-### Release 4.0.4-h4
-_Release Date: TBD_
-
-- [HIPPLUG-1570](https://issues.onehippo.com/browse/HIPPLUG-1570): add a facility to ``UrlRewriteWrappedResponse`` to 
-  inject disallowed duplicate header names. Method ``addHeader`` checks this to avoid the headers to be added twice.
-- Using javax servlet-api version 3.0.1  
