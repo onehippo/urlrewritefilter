@@ -1,14 +1,14 @@
 # Fork Information
 
-This Hippo fork builds on [paultuckey/urlrewritefilter](https://github.com/paultuckey/urlrewritefilter).
+This BloomReach fork builds on [paultuckey/urlrewritefilter](https://github.com/paultuckey/urlrewritefilter).
 
 ## Branching and Versioning
 
 The `master` branch is not be committed to so it can always easily be merged with Tuckey's master branch.
 
-The maintenance branch, like `urlrewriterfilter-4.0.x` contains Hippo specific commits and can be merged with `master`.
+The maintenance branch, like `urlrewriterfilter-4.0.x` contains BloomReach-specific commits and can be merged with `master`.
 
-A Hippo-specific urlrewritefilter version adds a -h1 (-h2, -h3 etc.) postfix to the version it extends.
+A BloomReach-specific urlrewritefilter version adds a -h1 (-h2, -h3 etc.) postfix to the version it extends.
 For example, version `4.0.4-h1` extends urlrewritefilter `4.0.4`.
 
 ## Releases
