@@ -10,7 +10,7 @@
     <groupId>org.tuckey</groupId>
     <artifactId>urlrewritefilter</artifactId>
     <packaging>jar</packaging>
-    <version>4.0.4-h4-SNAPSHOT</version>
+    <version>4.0.4-h4</version>
     <name>UrlRewriteFilter</name>
     <url>http://www.tuckey.org/urlrewrite/</url>
     <inceptionYear>2001</inceptionYear>
@@ -40,7 +40,8 @@
         <url>https://github.com/onehippo/urlrewritefilter</url>
         <connection>scm:git:git://github.com/onehippo/urlrewritefilter.git</connection>
         <developerConnection>scm:git:git@github.com:onehippo/urlrewritefilter.git</developerConnection>
-    </scm>
+      <tag>urlrewritefilter-4.0.4-h4</tag>
+  </scm>
 
     <developers>
         <developer>
