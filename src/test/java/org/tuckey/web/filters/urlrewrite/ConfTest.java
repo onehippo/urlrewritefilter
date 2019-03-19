@@ -62,8 +62,8 @@ public class ConfTest extends TestCase {
         Conf conf = new Conf(new MockServletContext(), is, "conf-test1.xml", "conf-test1.xml");
         assertTrue(conf.isOk());
         assertEquals("regex", conf.getDefaultMatchType());
-        assertEquals(false, conf.isUseContext());
-        assertEquals(false, conf.isUseQueryString());
+        assertFalse(conf.isUseContext());
+        assertFalse(conf.isUseQueryString());
         assertEquals("utf-8", conf.getDecodeUsing());
 
         List rules = conf.getRules();
@@ -75,7 +75,7 @@ public class ConfTest extends TestCase {
         assertEquals("basicto1", rule.getTo());
         assertFalse("rule 1 last not loading correctly", rule.isLast());
         assertEquals("forward", rule.getToType());
-        assertEquals(false, rule.isEncodeToUrl());
+        assertFalse(rule.isEncodeToUrl());
         SetAttribute set = (SetAttribute) rule.getSetAttributes().get(0);
         assertEquals("name of set, it's " + set.getName(), "valuenull", set.getName());
         assertNull("value of set should be null, it's " + set.getValue(), set.getValue());
@@ -97,10 +97,10 @@ public class ConfTest extends TestCase {
         assertEquals("$1", set2.getValue());
 
         ClassRule rule4 = (ClassRule) rules.get(4);
-        assertEquals(true, rule4.isValid());
+        assertTrue(rule4.isValid());
 
         ClassRule rule5 = (ClassRule) rules.get(5);
-        assertEquals(true, rule5.isValid());
+        assertTrue(rule5.isValid());
 
         NormalRule rule6 = (NormalRule) rules.get(6);
         Run run = (Run) rule6.getRuns().get(0);
@@ -108,10 +108,18 @@ public class ConfTest extends TestCase {
 
         OutboundRule outboundRule = (OutboundRule) outboundRules.get(0);
         assertEquals("default encode on to test", outboundRule.getName());
-        assertEquals(true, outboundRule.isEncodeToUrl());
+        assertTrue(outboundRule.isEncodeToUrl());
 
         CatchElem catchElem = (CatchElem) catches.get(0);
-        assertEquals(true, catchElem.isValid());
+        assertTrue(catchElem.isValid());
+
+        // CDATA:
+        final NormalRule cdataRule = (NormalRule) rules.get(3);
+        assertNotNull(cdataRule);
+        final String from = cdataRule.getFrom();
+        assertEquals("(.*)", from);
+        final String to = cdataRule.getTo();
+        assertEquals("https:///very/newdir/$1", to);
     }
 
 
@@ -124,7 +132,6 @@ public class ConfTest extends TestCase {
     }
 
     public void testConfDefaults() throws FileNotFoundException {
-        System.out.println("testConfDefaults");
         Conf conf = new Conf(ConfTest.class.getResource("conf-test2.xml"));
         assertTrue("Conf should have loaded ok", conf.isOk());
         assertEquals("use context should be true", true, conf.isUseContext());
