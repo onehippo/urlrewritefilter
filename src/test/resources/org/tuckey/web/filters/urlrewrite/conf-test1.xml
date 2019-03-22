@@ -6,9 +6,13 @@
 
     <rule>
         <condition next="or" type="header" name="user-agent">basicvalue1</condition>
-        <from>basicfrom1</from>
+        <from><![CDATA[
+        basicfrom1
+        ]]></from>
         <set name="valuenull"/>
-        <to last="false" context="othercontext">basicto1</to>
+        <to last="false" context="othercontext"><![CDATA[
+        basicto1
+        ]]></to>
     </rule>
     <rule enabled="false">
         <name>Mega Rule</name>
@@ -25,19 +29,27 @@
     </rule>
     <rule>
         <from>/some/olddir/(.*)</from>
-        <set name="blah">$1</set>
+        <set name="blah"><![CDATA[
+        $1
+        ]]></set>
         <set type="session" name="nam">val</set>
         <set type="cookie" name="mycook">val:tuckey.org:96:/asdsad</set>
         <set type="status">201</set>
         <set type="locale">en-NZ-bro</set>
-        <set type="charset">UTF-8</set>
+        <set type="charset"><![CDATA[
+        UTF-8
+        ]]></set>
         <set type="content-type">application/spagcodebrowserplugin</set>
     </rule>
 
     <rule>
         <condition type="port">80</condition>
-        <from>(.*)</from>
-        <to type="redirect">https:///very/newdir/$1</to>
+        <from><![CDATA[
+        (.*)
+        ]]></from>
+        <to type="redirect"><![CDATA[
+        https:///very/newdir/$1
+        ]]></to>
     </rule>
 
     <class-rule class="org.tuckey.web.filters.urlrewrite.TestRuleObj"/>

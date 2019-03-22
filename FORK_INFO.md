@@ -13,6 +13,12 @@ For example, version `4.0.4-h1` extends urlrewritefilter `4.0.4`.
 
 ## Releases
 
+### Release 4.0.4-h5
+_Release Date: 22 March 2019_
+
+- [HIPPLUG-1587](https://issues.onehippo.com/browse/HIPPLUG-1587): in XML rule, accept CDATA values in elements, 
+  so escaping is not needed in advanced values. E.g. advanced RegExp's or a parameterized URL: ``<to><![CDATA[to-url&param=1]]></to>``  
+
 ### Release 4.0.4-h4
 _Release Date: 25 January 2019_
 

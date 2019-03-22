@@ -34,17 +34,6 @@
  */
 package org.tuckey.web.filters.urlrewrite;
 
-import org.tuckey.web.filters.urlrewrite.gzip.GzipFilter;
-import org.tuckey.web.filters.urlrewrite.utils.Log;
-import org.tuckey.web.filters.urlrewrite.utils.ModRewriteConfLoader;
-import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
-import org.w3c.dom.*;
-import org.xml.sax.SAXParseException;
-
-import javax.servlet.ServletContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -53,6 +42,24 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.servlet.ServletContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.tuckey.web.filters.urlrewrite.gzip.GzipFilter;
+import org.tuckey.web.filters.urlrewrite.utils.Log;
+import org.tuckey.web.filters.urlrewrite.utils.ModRewriteConfLoader;
+import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXParseException;
 
 /**
  * Configuration object for urlrewrite filter.
@@ -397,14 +404,26 @@ public class Conf {
     }
 
     private static String getNodeValue(Node node) {
-        if (node == null) return null;
-        NodeList nodeList = node.getChildNodes();
-        if (nodeList == null) return null;
-        Node child = nodeList.item(0);
-        if (child == null) return null;
-        if ((child.getNodeType() == Node.TEXT_NODE)) {
+
+        if (node == null) {
+            return null;
+        }
+        final NodeList nodeList = node.getChildNodes();
+        if (nodeList == null) {
+            return null;
+        }
+        final Node child = nodeList.item(0);
+        if (child == null) {
+            return null;
+        }
+        final short nodeType = child.getNodeType();
+        if ((nodeType == Node.TEXT_NODE)) {
             String value = ((Text) child).getData();
             return value.trim();
+        }
+        if (nodeType == Node.CDATA_SECTION_NODE) {
+            final CharacterData cd = (CharacterData) child;
+            return cd.getData().trim();
         }
         return null;
     }
