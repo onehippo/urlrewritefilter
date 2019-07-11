@@ -162,7 +162,7 @@ public final class RequestProxy {
             try (CloseableHttpResponse response = client.execute(requestParam)) {
 
                 //copy the target response headers to our response
-                setupResponseHeaders(targetRequest, response, hsResponse, dropCookies);
+                setupResponseHeaders(response, hsResponse, dropCookies);
 
                 InputStream originalResponseStream = response.getEntity().getContent();
                 //the body might be null, i.e. for responses with cache-headers which leave out the body
@@ -274,42 +274,41 @@ public final class RequestProxy {
         return method;
     }
 
-    private static void setupResponseHeaders(HttpRequestBase httpMethod, CloseableHttpResponse httpResponse, HttpServletResponse hsResponse, boolean dropCookies) {
-        if ( log.isInfoEnabled() ) {
-            log.info("setupResponseHeaders");
-            log.info("status text: " + httpResponse.getStatusLine().getReasonPhrase());
-            log.info("status line: " + httpResponse.getStatusLine().getStatusCode());
-        }
+    private static void setupResponseHeaders(CloseableHttpResponse httpResponse, HttpServletResponse hsResponse, boolean dropCookies) {
+		if ( log.isInfoEnabled() ) {
+			log.info("setupResponseHeaders");
+			log.info("status text: " + httpResponse.getStatusLine().getReasonPhrase());
+			log.info("status line: " + httpResponse.getStatusLine().getStatusCode());
+		}
 
-        //filter the headers, which are copied from the proxy response. The http lib handles those itself.
-        //Filtered out: the content encoding, the content length and cookies
-        for (int i = 0; i < httpMethod.getAllHeaders().length; i++) {
-            Header h = httpMethod.getAllHeaders()[i];
-            if ("content-encoding".equalsIgnoreCase(h.getName())) {
-                continue;
-            } else if ("content-length".equalsIgnoreCase(h.getName())) {
-                continue;
-            } else if ("transfer-encoding".equalsIgnoreCase(h.getName())) {
-                continue;
-            } else if (dropCookies) {
-                if (h.getName().toLowerCase().startsWith("cookie")) {
-                    //retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
-                    continue;
-                } else if (h.getName().toLowerCase().startsWith("set-cookie")) {
-                    //retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
-                    continue;
-                }
-            }
+		//filter the headers, which are copied from the proxy response. The http lib handles those itself.
+		//Filtered out: the content encoding, the content length and cookies
+		for (Header responseHeader : httpResponse.getAllHeaders()) {
+			if ("content-encoding".equalsIgnoreCase(responseHeader.getName())) {
+				continue;
+			} else if ("content-length".equalsIgnoreCase(responseHeader.getName())) {
+				continue;
+			} else if ("transfer-encoding".equalsIgnoreCase(responseHeader.getName())) {
+				continue;
+			} else if (dropCookies) {
+				if (responseHeader.getName().toLowerCase().startsWith("cookie")) {
+					//retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
+					continue;
+				} else if (responseHeader.getName().toLowerCase().startsWith("set-cookie")) {
+					//retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
+					continue;
+				}
+			}
 
-            hsResponse.addHeader(h.getName(), h.getValue());
-            if (log.isInfoEnabled()) {
-                log.info("setting response parameter:" + h.getName() + ", value: " + h.getValue());
-            }
-        }
-        //fixme what about the response footers? (httpMethod.getResponseFooters())
+			hsResponse.addHeader(responseHeader.getName(), responseHeader.getValue());
+			if (log.isInfoEnabled()) {
+				log.info("setting response parameter:" + responseHeader.getName() + ", value: " + responseHeader.getValue());
+			}
+		}
+		//fixme what about the response footers? (httpMethod.getResponseFooters())
 
-        if (httpResponse.getStatusLine().getStatusCode() != 200) {
-            hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
-        }
-    }
+		if (httpResponse.getStatusLine().getStatusCode() != 200) {
+			hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
+		}
+	}
 }
