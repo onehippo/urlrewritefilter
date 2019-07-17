@@ -174,11 +174,13 @@ public final class RequestProxy {
                 //copy the target response headers to our response
                 setupResponseHeaders(response, hsResponse, dropCookies);
 
-                InputStream originalResponseStream = response.getEntity().getContent();
-                //the body might be null, i.e. for responses with cache-headers which leave out the body
-                if (originalResponseStream != null) {
-                    OutputStream responseStream = hsResponse.getOutputStream();
-                    copyStream(originalResponseStream, responseStream);
+                //the body might be null, i.e. for responses with cache-headers which leave out the body, like 304 response
+                if (response.getEntity() != null) {
+                    final InputStream originalResponseStream = response.getEntity().getContent();
+                    if (originalResponseStream != null) {
+                        final OutputStream responseStream = hsResponse.getOutputStream();
+                        copyStream(originalResponseStream, responseStream);
+                    }
                 }
                 EntityUtils.consume(response.getEntity());
 
@@ -203,8 +205,8 @@ public final class RequestProxy {
             int colonIdx = proxyHostStr.indexOf(':');
             if (colonIdx != -1) {
                 proxyHostStr = proxyHostStr.substring(0, colonIdx);
-                String proxyPortStr = useProxyServer.substring(colonIdx + 1);
-                if (proxyPortStr != null && proxyPortStr.length() > 0 && NUMBER_PATTERN.matcher(proxyPortStr).matches()) {
+                final String proxyPortStr = useProxyServer.substring(colonIdx + 1);
+                if (proxyPortStr.length() > 0 && NUMBER_PATTERN.matcher(proxyPortStr).matches()) {
                     int proxyPort = Integer.parseInt(proxyPortStr);
                     proxyHost = new HttpHost(proxyHostStr, proxyPort);
                 } else {
