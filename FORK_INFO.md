@@ -9,15 +9,21 @@ The `master` branch is not be committed to so it can always easily be merged wit
 The maintenance branch, like `urlrewriterfilter-4.0.x` contains BloomReach-specific commits and can be merged with `master`.
 
 A BloomReach-specific urlrewritefilter version adds a -h1 (-h2, -h3 etc.) postfix to the version it extends.
-For example, version `4.0.4-h1` extends urlrewritefilter `4.0.4`.
+For example, version `4.0.4-h7` extends urlrewritefilter `4.0.4`.
 
 ## Releases
+
+### Release 4.0.4-h7
+_Release Date: 17 July 2019_
+
+- [HIPPLUG-1595](https://issues.onehippo.com/browse/HIPPLUG-1587): 
+    fix NullPointerException in RequestProxy in case response entity is empty.
 
 ### Release 4.0.4-h5
 _Release Date: 22 March 2019_
 
 - [HIPPLUG-1587](https://issues.onehippo.com/browse/HIPPLUG-1587): in XML rule, accept CDATA values in elements, 
-  so escaping is not needed in advanced values. E.g. advanced RegExp's or a parameterized URL: ``<to><![CDATA[to-url&param=1]]></to>``  
+  so escaping is not needed in advanced values. E.g. advanced RegExp's or a parameterized URL: ``<to><![CDATA[to-url&param=1]]></to>``. 
 
 ### Release 4.0.4-h4
 _Release Date: 25 January 2019_
@@ -29,7 +35,7 @@ _Release Date: 25 January 2019_
 ### Release 4.0.4-h3
 _Release Date: 3 December 2018_
 
-- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565): Remove dependency on Guava
+- [HIPPLUG-1565](https://issues.onehippo.com/browse/HIPPLUG-1565): remove dependency on Guava
 
 ### Release 4.0.4-h2
 _Release Date: 30 March 2017_
