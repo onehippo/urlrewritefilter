@@ -34,6 +34,23 @@
  */
 package org.tuckey.web.filters.urlrewrite;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHost;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
+import org.tuckey.web.filters.urlrewrite.utils.Log;
+import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -42,30 +59,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.util.EntityUtils;
-import org.tuckey.web.filters.urlrewrite.utils.Log;
-import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
 
 /**
  * This class is responsible for a proxy http request.
@@ -82,8 +75,6 @@ public final class RequestProxy {
     private static final Log log = Log.getLog(RequestProxy.class);
     private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]+");
 
-    private RequestProxy() {
-    }
 
     /**
      * This method performs the proxying of the request to the target address.
@@ -96,19 +87,19 @@ public final class RequestProxy {
      * @throws java.io.IOException Passed on from the connection logic.
      */
     public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse) throws IOException {
-        execute(target, hsRequest, hsResponse, true);
+        execute(target, hsRequest, hsResponse, true, false, false);
     }
 
     /**
      * This method performs the proxying of the request to the target address.
      *
-     * @param target     The target address. Has to be a fully qualified address. The request is send as-is to this address.
-     * @param hsRequest  The request data which should be send to the
-     * @param hsResponse The response data which will contain the data returned by the proxied request to target.
+     * @param target      The target address. Has to be a fully qualified address. The request is send as-is to this address.
+     * @param hsRequest   The request data which should be send to the
+     * @param hsResponse  The response data which will contain the data returned by the proxied request to target.
      * @param dropCookies Determinate whether cookies should be dropped (when {@code true}) or forwarded to client.
      * @throws java.io.IOException Passed on from the connection logic.
      */
-    public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse, boolean dropCookies) throws IOException {
+    public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse, boolean dropCookies, boolean followRedirects, boolean useSystemProperties) throws IOException {
         if (log.isInfoEnabled()) {
             log.info("execute, target is " + target);
             log.info("response commit state: " + hsResponse.isCommitted());
@@ -134,14 +125,14 @@ public final class RequestProxy {
 
         HttpHost proxyHost = getUseProxyServer((String) hsRequest.getAttribute("use-proxy"));
         if (proxyHost != null) configBuilder.setProxy(proxyHost);
-        RequestConfig config = configBuilder.build();
+        RequestConfig config = configBuilder.setRedirectsEnabled(followRedirects).build();
 
         if (log.isInfoEnabled()) {
             log.info("config is " + config.toString());
         }
 
         final int port = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
-        url = new URL( url.getProtocol(), url.getHost(), port, url.getFile());
+        url = new URL(url.getProtocol(), url.getHost(), port, url.getFile());
 
         final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
         if (targetRequest == null) {
@@ -150,10 +141,7 @@ public final class RequestProxy {
         }
 
         //perform the request to the target server
-        try (CloseableHttpClient client = HttpClients.custom()
-                .setDefaultRequestConfig(config)
-                .setConnectionManager(new BasicHttpClientConnectionManager())
-                .build()) {
+        try (CloseableHttpClient client = getHttpClient(config, useSystemProperties)) {
             if (log.isInfoEnabled()) {
                 log.info("executeMethod / fetching data ...");
             }
@@ -187,6 +175,16 @@ public final class RequestProxy {
                 log.info("set up response, result code was " + response.getStatusLine().getStatusCode());
             }
         }
+    }
+
+    private static CloseableHttpClient getHttpClient(RequestConfig config, boolean useSystemProperties) {
+        final HttpClientBuilder builder = HttpClients.custom()
+                .setDefaultRequestConfig(config)
+                .setConnectionManager(new BasicHttpClientConnectionManager());
+        if (useSystemProperties) {
+            builder.useSystemProperties();
+        }
+        return builder.build();
     }
 
     public static void copyStream(InputStream in, OutputStream out) throws IOException {
@@ -248,8 +246,7 @@ public final class RequestProxy {
         method.setConfig(config);
         try {
             method.setURI(targetUrl.toURI());
-        }
-        catch(URISyntaxException e) {
+        } catch (URISyntaxException e) {
             throw new IOException(e);
         }
 
@@ -282,45 +279,45 @@ public final class RequestProxy {
             }
         }
 
-        if ( log.isInfoEnabled() ) log.info("proxy query string " + method.getRequestLine());
+        if (log.isInfoEnabled()) log.info("proxy query string " + method.getRequestLine());
         return method;
     }
 
     private static void setupResponseHeaders(CloseableHttpResponse httpResponse, HttpServletResponse hsResponse, boolean dropCookies) {
-		if ( log.isInfoEnabled() ) {
-			log.info("setupResponseHeaders");
-			log.info("status text: " + httpResponse.getStatusLine().getReasonPhrase());
-			log.info("status line: " + httpResponse.getStatusLine().getStatusCode());
-		}
+        if (log.isInfoEnabled()) {
+            log.info("setupResponseHeaders");
+            log.info("status text: " + httpResponse.getStatusLine().getReasonPhrase());
+            log.info("status line: " + httpResponse.getStatusLine().getStatusCode());
+        }
 
-		//filter the headers, which are copied from the proxy response. The http lib handles those itself.
-		//Filtered out: the content encoding, the content length and cookies
-		for (Header responseHeader : httpResponse.getAllHeaders()) {
-			if ("content-encoding".equalsIgnoreCase(responseHeader.getName())) {
-				continue;
-			} else if ("content-length".equalsIgnoreCase(responseHeader.getName())) {
-				continue;
-			} else if ("transfer-encoding".equalsIgnoreCase(responseHeader.getName())) {
-				continue;
-			} else if (dropCookies) {
-				if (responseHeader.getName().toLowerCase().startsWith("cookie")) {
-					//retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
-					continue;
-				} else if (responseHeader.getName().toLowerCase().startsWith("set-cookie")) {
-					//retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
-					continue;
-				}
-			}
+        //filter the headers, which are copied from the proxy response. The http lib handles those itself.
+        //Filtered out: the content encoding, the content length and cookies
+        for (Header responseHeader : httpResponse.getAllHeaders()) {
+            if ("content-encoding".equalsIgnoreCase(responseHeader.getName())) {
+                continue;
+            } else if ("content-length".equalsIgnoreCase(responseHeader.getName())) {
+                continue;
+            } else if ("transfer-encoding".equalsIgnoreCase(responseHeader.getName())) {
+                continue;
+            } else if (dropCookies) {
+                if (responseHeader.getName().toLowerCase().startsWith("cookie")) {
+                    //retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
+                    continue;
+                } else if (responseHeader.getName().toLowerCase().startsWith("set-cookie")) {
+                    //retrieving a cookie which sets the session id will change the calling session: bad! So we skip this header.
+                    continue;
+                }
+            }
 
-			hsResponse.addHeader(responseHeader.getName(), responseHeader.getValue());
-			if (log.isInfoEnabled()) {
-				log.info("setting response parameter:" + responseHeader.getName() + ", value: " + responseHeader.getValue());
-			}
-		}
-		//fixme what about the response footers? (httpMethod.getResponseFooters())
+            hsResponse.addHeader(responseHeader.getName(), responseHeader.getValue());
+            if (log.isInfoEnabled()) {
+                log.info("setting response parameter:" + responseHeader.getName() + ", value: " + responseHeader.getValue());
+            }
+        }
+        //fixme what about the response footers? (httpMethod.getResponseFooters())
 
-		if (httpResponse.getStatusLine().getStatusCode() != 200) {
-			hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
-		}
-	}
+        if (httpResponse.getStatusLine().getStatusCode() != 200) {
+            hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
+        }
+    }
 }
