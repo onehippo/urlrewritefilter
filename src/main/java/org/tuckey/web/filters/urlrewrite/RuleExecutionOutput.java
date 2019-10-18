@@ -51,6 +51,8 @@ public class RuleExecutionOutput {
     private boolean noSubstitution = false;
     private RewriteMatch rewriteMatch;
     private boolean dropCookies = true;
+    private boolean followRedirects = false;
+    private boolean useSystemProperties = false;
 
     /**
      * Will perform the action defined by the rule ie, redirect or passthrough.
@@ -178,4 +180,21 @@ public class RuleExecutionOutput {
     public void setDropCookies(final boolean dropCookies) {
         this.dropCookies = dropCookies;
     }
+
+    public void setFollowRedirects(final boolean followRedirects) {
+        this.followRedirects = followRedirects;
+    }
+
+    public boolean isFollowRedirects() {
+        return followRedirects;
+    }
+
+    public void setUseSystemProperties(final boolean useSystemProperties) {
+        this.useSystemProperties = useSystemProperties;
+    }
+
+    public boolean isUseSystemProperties() {
+        return useSystemProperties;
+    }
 }
+

@@ -256,6 +256,8 @@ public class Conf {
                 rule.setQueryStringAppend(getAttrValue(toNode, "qsappend"));
                 rule.setDropCookies("true".equals(getAttrValue(toNode, "drop-cookies")));
                 if ("true".equalsIgnoreCase(getAttrValue(toNode, "encode"))) rule.setEncodeToUrl(true);
+                rule.setFollowRedirects("true".equals(getAttrValue(toNode, "followRedirects")));
+                rule.setUseSystemProperties("true".equals((getAttrValue(toNode, "useSystemProperties"))));
 
                 processSetAttributes(ruleElement, rule);
 
