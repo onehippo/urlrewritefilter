@@ -13,6 +13,12 @@ For example, version `4.0.4-h7` extends urlrewritefilter `4.0.4`.
 
 ## Releases
 
+### Release 4.0.4-h8
+_Release Date: 18 October 2019_
+
+- [HIPPLUG-1606](https://issues.onehippo.com/browse/HIPPLUG-1606): 
+- add followRedirects and useSystemProperties (RequestProxy settings) 
+
 ### Release 4.0.4-h7
 _Release Date: 17 July 2019_
 
