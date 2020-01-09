@@ -60,6 +60,8 @@ type (redirect|temporary-redirect|permanent-redirect|pre-include|post-include|fo
 last (true|false) "false"
 qsappend (true|false) "false"
 drop-cookies (true|false) "false"
+followRedirects (true|false) "false"
+useSystemProperties (true|false) "false"
 encode (true|false) #IMPLIED
 context CDATA  #IMPLIED
 >
