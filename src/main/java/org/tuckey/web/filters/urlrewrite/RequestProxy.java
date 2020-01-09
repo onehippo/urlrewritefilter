@@ -38,7 +38,14 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -75,11 +82,12 @@ public final class RequestProxy {
     private static final Log log = Log.getLog(RequestProxy.class);
     private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]+");
 
+    private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
     /**
      * This method performs the proxying of the request to the target address.
      * <p/>
-     * Cookies will not be forwarded to client.
+     * Cookies will not be forwarded to client and proxy headers (such as {@value #X_FORWARDED_FOR}) will not be added.
      *
      * @param target     The target address. Has to be a fully qualified address. The request is send as-is to this address.
      * @param hsRequest  The request data which should be send to the
@@ -87,19 +95,20 @@ public final class RequestProxy {
      * @throws java.io.IOException Passed on from the connection logic.
      */
     public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse) throws IOException {
-        execute(target, hsRequest, hsResponse, true, false, false);
+        execute(target, hsRequest, hsResponse, true, false, false, false);
     }
 
     /**
      * This method performs the proxying of the request to the target address.
      *
-     * @param target      The target address. Has to be a fully qualified address. The request is send as-is to this address.
-     * @param hsRequest   The request data which should be send to the
-     * @param hsResponse  The response data which will contain the data returned by the proxied request to target.
-     * @param dropCookies Determinate whether cookies should be dropped (when {@code true}) or forwarded to client.
+     * @param target          The target address. Has to be a fully qualified address. The request is send as-is to this address.
+     * @param hsRequest       The request data which should be send to the
+     * @param hsResponse      The response data which will contain the data returned by the proxied request to target.
+     * @param dropCookies     Determinate whether cookies should be dropped (when {@code true}) or forwarded to client.
+     * @param addProxyHeaders If {@code true}, then additional proxy headers (such as {@value #X_FORWARDED_FOR}) will be added to the proxied request to the target.
      * @throws java.io.IOException Passed on from the connection logic.
      */
-    public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse, boolean dropCookies, boolean followRedirects, boolean useSystemProperties) throws IOException {
+    public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse, boolean dropCookies, boolean followRedirects, boolean useSystemProperties, boolean addProxyHeaders) throws IOException {
         if (log.isInfoEnabled()) {
             log.info("execute, target is " + target);
             log.info("response commit state: " + hsResponse.isCommitted());
@@ -131,7 +140,7 @@ public final class RequestProxy {
             log.info("config is " + config.toString());
         }
 
-        final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
+        final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies, addProxyHeaders);
         if (targetRequest == null) {
             log.error("Unsupported request method found: " + hsRequest.getMethod());
             return;
@@ -214,7 +223,7 @@ public final class RequestProxy {
         return proxyHost;
     }
 
-    private static HttpRequestBase setupProxyRequest(final HttpServletRequest hsRequest, final URL targetUrl, boolean dropCookies) throws IOException {
+    private static HttpRequestBase setupProxyRequest(final HttpServletRequest hsRequest, final URL targetUrl, boolean dropCookies, boolean addProxyHeaders) throws IOException {
         final String methodName = hsRequest.getMethod();
         final HttpRequestBase method;
         if ("POST".equalsIgnoreCase(methodName)) {
@@ -274,6 +283,22 @@ public final class RequestProxy {
                     method.addHeader(headerName, headerValue);
                 }
             }
+        }
+
+        // Generate proxy headers
+        if (addProxyHeaders) {
+            String xForwardedForHeader = X_FORWARDED_FOR;
+            String xForwardedForValue = hsRequest.getHeader(xForwardedForHeader);
+            if (xForwardedForValue == null) {
+                xForwardedForValue = hsRequest.getRemoteAddr();
+            } else {
+                final String clientAddr = xForwardedForValue.split(",\\s*")[0].trim();
+                if (!clientAddr.isEmpty()) {
+                    xForwardedForValue += ", " + clientAddr;
+                }
+            }
+            log.info("setting proxy request parameter (add-proxy-headers): " + xForwardedForHeader + ", value: " + xForwardedForValue);
+            method.addHeader(xForwardedForHeader, xForwardedForValue);
         }
 
         if (log.isInfoEnabled()) log.info("proxy query string " + method.getRequestLine());

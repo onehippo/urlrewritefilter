@@ -295,7 +295,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
             if (hsResponse.isCommitted()) {
                 log.error("response is committed. cannot proxy " + target + ". Check that you haven't written to the response before.");
             } else {
-                RequestProxy.execute(target, hsRequest, hsResponse, dropCookies, followRedirects, useSystemProperties);
+                RequestProxy.execute(target, hsRequest, hsResponse, dropCookies, followRedirects, useSystemProperties, addProxyHeaders);
                 if (log.isTraceEnabled()) {
                     log.trace("Proxied request to " + target);
                 }
