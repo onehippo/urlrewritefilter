@@ -53,6 +53,7 @@ public class RuleExecutionOutput {
     private boolean dropCookies = true;
     private boolean followRedirects = false;
     private boolean useSystemProperties = false;
+    private boolean addProxyHeaders = false;
 
     /**
      * Will perform the action defined by the rule ie, redirect or passthrough.
@@ -195,6 +196,14 @@ public class RuleExecutionOutput {
 
     public boolean isUseSystemProperties() {
         return useSystemProperties;
+    }
+
+    public void setAddProxyHeaders(final boolean addProxyHeaders) {
+        this.addProxyHeaders = addProxyHeaders;
+    }
+
+    public boolean isAddProxyHeaders() {
+        return addProxyHeaders;
     }
 }
 

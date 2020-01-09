@@ -71,6 +71,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
     private boolean dropCookies = true;
     private boolean followRedirects = true;
     private boolean useSystemProperties = false;
+    private boolean addProxyHeaders = false;
     private RewriteMatch rewriteMatch;
     private ServletContext targetContext = null;
 
@@ -88,6 +89,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
         this.dropCookies = ruleExecutionOutput.isDropCookies();
         this.followRedirects = ruleExecutionOutput.isFollowRedirects();
         this.useSystemProperties = ruleExecutionOutput.isUseSystemProperties();
+        this.addProxyHeaders = ruleExecutionOutput.isAddProxyHeaders();
     }
 
     /**

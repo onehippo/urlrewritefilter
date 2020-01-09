@@ -73,6 +73,7 @@ public class NormalRule extends RuleBase implements Rule {
     private ServletContext toServletContext = null;
     private boolean followRedirects = false;
     private boolean useSystemProperties = false;
+    private boolean addProxyHeaders = false;
 
     /**
      * Will run the rule against the uri and perform action required will return false is not matched
@@ -99,6 +100,7 @@ public class NormalRule extends RuleBase implements Rule {
         if ( toServletContext != null ) ruleExecutionOutput.setReplacedUrlContext(toServletContext);
         ruleExecutionOutput.setFollowRedirects(followRedirects);
         ruleExecutionOutput.setUseSystemProperties(useSystemProperties);
+        ruleExecutionOutput.setAddProxyHeaders(addProxyHeaders);
         return RuleExecutionOutput.getRewritenUrl(toType, encodeToUrl, ruleExecutionOutput);
     }
 
@@ -241,5 +243,9 @@ public class NormalRule extends RuleBase implements Rule {
 
     public void setUseSystemProperties(boolean useSystemProperties) {
         this.useSystemProperties = useSystemProperties;
+    }
+
+    public void setAddProxyHeaders(boolean addProxyHeaders) {
+        this.addProxyHeaders = addProxyHeaders;
     }
 }
