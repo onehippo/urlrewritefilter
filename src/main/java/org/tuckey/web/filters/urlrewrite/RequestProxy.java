@@ -288,15 +288,12 @@ public final class RequestProxy {
         // Generate proxy headers
         if (addProxyHeaders) {
             String xForwardedForHeader = X_FORWARDED_FOR;
-            String xForwardedForValue = hsRequest.getHeader(xForwardedForHeader);
-            if (xForwardedForValue == null) {
-                xForwardedForValue = hsRequest.getRemoteAddr();
-            } else {
-                final String clientAddr = xForwardedForValue.split(",\\s*")[0].trim();
-                if (!clientAddr.isEmpty()) {
-                    xForwardedForValue += ", " + clientAddr;
-                }
-            }
+            String currentXForwardedForValue = hsRequest.getHeader(xForwardedForHeader);
+            String currentRemoteAddr = hsRequest.getRemoteAddr();
+            // Expected format: "X-Forwarded-For: <Real Client IP>, <Proxy 1 IP>, <Proxy 2 IP>, ..."
+            String xForwardedForValue = !StringUtils.isBlank(currentXForwardedForValue)
+                    ? currentXForwardedForValue + ", " + currentRemoteAddr
+                    : currentRemoteAddr;
             log.info("setting proxy request parameter (add-proxy-headers): " + xForwardedForHeader + ", value: " + xForwardedForValue);
             method.addHeader(xForwardedForHeader, xForwardedForValue);
         }
