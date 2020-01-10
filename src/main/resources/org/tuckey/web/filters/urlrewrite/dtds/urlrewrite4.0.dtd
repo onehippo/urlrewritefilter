@@ -54,6 +54,7 @@ type (request|session|response-header|cookie|content-type|charset|locale|status|
 name CDATA  #IMPLIED
 >
 
+<!-- Supported comma-delimited add-proxy-header values (case-sensitive): Host, X-Forwarded-By, X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto -->
 <!ELEMENT to (#PCDATA)>
 <!ATTLIST to
 type (redirect|temporary-redirect|permanent-redirect|pre-include|post-include|forward|passthrough|proxy) "forward"
