@@ -43,6 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -73,7 +75,7 @@ public class NormalRule extends RuleBase implements Rule {
     private ServletContext toServletContext = null;
     private boolean followRedirects = false;
     private boolean useSystemProperties = false;
-    private boolean addProxyHeaders = false;
+    private List<String> addProxyHeaders = Collections.emptyList();
 
     /**
      * Will run the rule against the uri and perform action required will return false is not matched
@@ -245,7 +247,7 @@ public class NormalRule extends RuleBase implements Rule {
         this.useSystemProperties = useSystemProperties;
     }
 
-    public void setAddProxyHeaders(boolean addProxyHeaders) {
+    public void setAddProxyHeaders(List<String> addProxyHeaders) {
         this.addProxyHeaders = addProxyHeaders;
     }
 }

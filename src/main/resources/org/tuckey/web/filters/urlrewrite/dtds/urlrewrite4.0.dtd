@@ -62,7 +62,7 @@ qsappend (true|false) "false"
 drop-cookies (true|false) "false"
 followRedirects (true|false) "false"
 useSystemProperties (true|false) "false"
-add-proxy-headers (true|false) "false"
+add-proxy-headers CDATA #IMPLIED
 encode (true|false) #IMPLIED
 context CDATA  #IMPLIED
 >
