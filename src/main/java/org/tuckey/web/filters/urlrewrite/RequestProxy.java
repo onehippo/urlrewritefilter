@@ -263,6 +263,7 @@ public final class RequestProxy {
             throw new IOException(e);
         }
 
+        // Propagate existing headers
         Enumeration<String> e = hsRequest.getHeaderNames();
         if (e != null) {
             while (e.hasMoreElements()) {
@@ -318,32 +319,32 @@ public final class RequestProxy {
             switch (headerName) {
                 case HOST:
                     // Propagate existing header always, rather than generating a new Host value for the target host
-                    addRequestHeader(request, HOST, hsRequest.getServerName() + ":" + hsRequest.getServerPort(), proxyHeaderSection);
+                    setRequestHeader(request, HOST, hsRequest.getServerName() + ":" + hsRequest.getServerPort(), proxyHeaderSection);
                     break;
                 case X_FORWARDED_BY:
                     // Expected format: "X-Forwarded-By: <Proxy 1 Host>, <Proxy 2 Host>, ..."
                     String existingHeaderValue = hsRequest.getHeader(X_FORWARDED_BY);
                     String currentHost = hsRequest.getServerName() + ":" + hsRequest.getServerPort();
                     String newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? currentHost : existingHeaderValue + ", " + currentHost;
-                    addRequestHeader(request, X_FORWARDED_BY, newHeaderValue, proxyHeaderSection);
+                    setRequestHeader(request, X_FORWARDED_BY, newHeaderValue, proxyHeaderSection);
                     break;
                 case X_FORWARDED_FOR:
                     // Expected format: "X-Forwarded-For: <Real Client IP>, <Proxy 1 IP>, <Proxy 2 IP>, ..."
                     existingHeaderValue = hsRequest.getHeader(X_FORWARDED_FOR);
                     newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? hsRequest.getRemoteAddr() : existingHeaderValue + ", " + hsRequest.getRemoteAddr();
-                    addRequestHeader(request, X_FORWARDED_FOR, newHeaderValue, proxyHeaderSection);
+                    setRequestHeader(request, X_FORWARDED_FOR, newHeaderValue, proxyHeaderSection);
                     break;
                 case X_FORWARDED_HOST:
                     // Use current request value or propagate existing header if present
                     existingHeaderValue = hsRequest.getHeader(X_FORWARDED_HOST);
                     newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? hsRequest.getRemoteHost() + hsRequest.getRemotePort() : existingHeaderValue;
-                    addRequestHeader(request, X_FORWARDED_HOST, newHeaderValue, proxyHeaderSection);
+                    setRequestHeader(request, X_FORWARDED_HOST, newHeaderValue, proxyHeaderSection);
                     break;
                 case X_FORWARDED_PROTO:
                     // Use current request value or propagate existing header if present
                     existingHeaderValue = hsRequest.getHeader(X_FORWARDED_PROTO);
                     newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? hsRequest.getScheme() : existingHeaderValue;
-                    addRequestHeader(request, X_FORWARDED_PROTO, newHeaderValue, proxyHeaderSection);
+                    setRequestHeader(request, X_FORWARDED_PROTO, newHeaderValue, proxyHeaderSection);
                     break;
                 default:
                     log.warn("Unexpected " + proxyHeaderSection + " name of \"" + headerName + "\". This header name is not supported.");
@@ -392,8 +393,16 @@ public final class RequestProxy {
 	private static void addRequestHeader(HttpRequestBase request, String headerName, String headerValue, String headerSection) {
     	if (log.isInfoEnabled()) {
             String headerSectionStr = !StringUtils.isBlank(headerSection) ? " (" + headerSection + ")" : "";
-            log.info("setting proxy request parameter" + headerSectionStr + ": " + headerName + ", value: " + headerValue);
+            log.info("adding proxy request header" + headerSectionStr + ": " + headerName + ", value: " + headerValue);
         }
 		request.addHeader(headerName, headerValue);
 	}
+
+    private static void setRequestHeader(HttpRequestBase request, String headerName, String headerValue, String headerSection) {
+        if (log.isInfoEnabled()) {
+            String headerSectionStr = !StringUtils.isBlank(headerSection) ? " (" + headerSection + ")" : "";
+            log.info("setting proxy request header" + headerSectionStr + ": " + headerName + ", value: " + headerValue);
+        }
+        request.setHeader(headerName, headerValue);
+    }
 }
