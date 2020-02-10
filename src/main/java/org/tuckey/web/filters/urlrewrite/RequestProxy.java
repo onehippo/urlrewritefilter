@@ -130,10 +130,6 @@ public final class RequestProxy {
         if (log.isInfoEnabled()) {
             log.info("config is " + config.toString());
         }
-
-        final int port = url.getPort() != -1 ? url.getPort() : url.getDefaultPort();
-        url = new URL(url.getProtocol(), url.getHost(), port, url.getFile());
-
         final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
         if (targetRequest == null) {
             log.error("Unsupported request method found: " + hsRequest.getMethod());
@@ -250,10 +246,10 @@ public final class RequestProxy {
             throw new IOException(e);
         }
 
-        Enumeration e = hsRequest.getHeaderNames();
+        Enumeration<String> e = hsRequest.getHeaderNames();
         if (e != null) {
             while (e.hasMoreElements()) {
-                String headerName = (String) e.nextElement();
+                String headerName = e.nextElement();
                 if ("host".equalsIgnoreCase(headerName)) {
                     //the host value is set by the http client
                     continue;
@@ -270,9 +266,9 @@ public final class RequestProxy {
                     continue;
                 }
 
-                Enumeration values = hsRequest.getHeaders(headerName);
+                Enumeration<String> values = hsRequest.getHeaders(headerName);
                 while (values.hasMoreElements()) {
-                    String headerValue = (String) values.nextElement();
+                    String headerValue = values.nextElement();
                     log.info("setting proxy request parameter:" + headerName + ", value: " + headerValue);
                     method.addHeader(headerName, headerValue);
                 }
