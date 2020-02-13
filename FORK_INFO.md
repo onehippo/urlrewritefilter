@@ -9,15 +9,21 @@ The `master` branch is not be committed to so it can always easily be merged wit
 The maintenance branch, like `urlrewriterfilter-4.0.x` contains BloomReach-specific commits and can be merged with `master`.
 
 A BloomReach-specific urlrewritefilter version adds a -h1 (-h2, -h3 etc.) postfix to the version it extends.
-For example, version `4.0.4-h7` extends urlrewritefilter `4.0.4`.
+For example, version `4.0.4-h9` extends urlrewritefilter `4.0.4`.
 
 ## Releases
 
+### Release 4.0.4-h9
+_Release Date: 13 February 2020_
+
+- [HIPPLUG-1646](https://issues.onehippo.com/browse/HIPPLUG-1646): 
+    in RequestProxy, do not recreate the URL object with the default port, as it can break SSL offloading.
+    
 ### Release 4.0.4-h8
 _Release Date: 18 October 2019_
 
 - [HIPPLUG-1606](https://issues.onehippo.com/browse/HIPPLUG-1606): 
-- add followRedirects and useSystemProperties (RequestProxy settings) 
+    in RequestProxy settings, add followRedirects and useSystemProperties.
 
 ### Release 4.0.4-h7
 _Release Date: 17 July 2019_
