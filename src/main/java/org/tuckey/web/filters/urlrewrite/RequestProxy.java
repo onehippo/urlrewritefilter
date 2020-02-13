@@ -111,7 +111,7 @@ public final class RequestProxy {
         }
 
         log.info("checking url");
-        URL url;
+        final URL url;
         try {
             url = new URL(target);
         } catch (MalformedURLException e) {
@@ -130,6 +130,7 @@ public final class RequestProxy {
         if (log.isInfoEnabled()) {
             log.info("config is " + config.toString());
         }
+
         final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
         if (targetRequest == null) {
             log.error("Unsupported request method found: " + hsRequest.getMethod());
