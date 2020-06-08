@@ -55,7 +55,7 @@ public class RuleExecutionOutput {
     private boolean dropCookies = true;
     private boolean followRedirects = false;
     private boolean useSystemProperties = false;
-    private List<String> addProxyHeaders = Collections.emptyList();
+    private List<ProxyHeaders> proxyHeaders = Collections.emptyList();
 
     /**
      * Will perform the action defined by the rule ie, redirect or passthrough.
@@ -200,12 +200,12 @@ public class RuleExecutionOutput {
         return useSystemProperties;
     }
 
-    public void setAddProxyHeaders(final List<String> addProxyHeaders) {
-        this.addProxyHeaders = addProxyHeaders;
+    public List<ProxyHeaders> getProxyHeaders() {
+        return this.proxyHeaders;
     }
 
-    public List<String> getAddProxyHeaders() {
-        return addProxyHeaders;
+    public void setProxyHeaders(List<ProxyHeaders> proxyHeaders) {
+        this.proxyHeaders = proxyHeaders;
     }
 }
 

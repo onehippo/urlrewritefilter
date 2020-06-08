@@ -57,7 +57,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -258,10 +257,7 @@ public class Conf {
                 if ("true".equalsIgnoreCase(getAttrValue(toNode, "encode"))) rule.setEncodeToUrl(true);
                 rule.setFollowRedirects("true".equals(getAttrValue(toNode, "followRedirects")));
                 rule.setUseSystemProperties("true".equals((getAttrValue(toNode, "useSystemProperties"))));
-                String proxyHeaders = getAttrValue(toNode, "add-proxy-headers");
-                if (!StringUtils.isBlank(proxyHeaders)) {
-                    rule.setAddProxyHeaders(Arrays.asList(proxyHeaders.split("[, ]+")));
-                }
+                rule.setProxyHeadersStr(getAttrValue(toNode, "proxy-headers"));
 
                 processSetAttributes(ruleElement, rule);
 

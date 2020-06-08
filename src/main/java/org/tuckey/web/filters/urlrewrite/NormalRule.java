@@ -43,8 +43,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 
 /**
@@ -75,7 +80,8 @@ public class NormalRule extends RuleBase implements Rule {
     private ServletContext toServletContext = null;
     private boolean followRedirects = false;
     private boolean useSystemProperties = false;
-    private List<String> addProxyHeaders = Collections.emptyList();
+    private String proxyHeadersStr = null;
+    private List<ProxyHeaders> proxyHeaders = Collections.emptyList();
 
     /**
      * Will run the rule against the uri and perform action required will return false is not matched
@@ -102,7 +108,7 @@ public class NormalRule extends RuleBase implements Rule {
         if ( toServletContext != null ) ruleExecutionOutput.setReplacedUrlContext(toServletContext);
         ruleExecutionOutput.setFollowRedirects(followRedirects);
         ruleExecutionOutput.setUseSystemProperties(useSystemProperties);
-        ruleExecutionOutput.setAddProxyHeaders(addProxyHeaders);
+        ruleExecutionOutput.setProxyHeaders(proxyHeaders);
         return RuleExecutionOutput.getRewritenUrl(toType, encodeToUrl, ruleExecutionOutput);
     }
 
@@ -139,6 +145,34 @@ public class NormalRule extends RuleBase implements Rule {
                 }   else {
                     log.debug("got context ok");
                 }
+            }
+        }
+
+        if (!StringUtils.isBlank(proxyHeadersStr)) {
+            if (toType != TO_TYPE_PROXY) {
+                addError("Proxy headers were defined, but the rule type \"" + getToType() + "\" is not a recognized proxy type.");
+            }
+            else {
+                // Convert to enum values for verification and optimization
+                Set<ProxyHeaders> normalizedProxyHeaders = new HashSet<>();
+                for (String headerName : proxyHeadersStr.split("[, ]+")) {
+                    if (headerName.equalsIgnoreCase(ProxyHeaders.INCLUDE_ALL)) {
+                        normalizedProxyHeaders.addAll(Arrays.asList(ProxyHeaders.values()));
+                        break;
+                    }
+                    Optional<ProxyHeaders> headerOpt = Arrays.stream(ProxyHeaders.values())
+                            .filter(headerValue -> headerName.equalsIgnoreCase(headerValue.getHeaderName()))
+                            .findFirst();
+                    if (headerOpt.isPresent()) {
+                        log.debug("Adding proxy header " + headerOpt.get().getHeaderName());
+                        if (!normalizedProxyHeaders.add(headerOpt.get())) {
+                            log.warn("Ignored attempt to add duplicate proxy header " + headerOpt.get().getHeaderName());
+                        }
+                    } else {
+                        addError("Could not find matching proxy header " + headerName);
+                    }
+                }
+                proxyHeaders = new ArrayList<>(normalizedProxyHeaders);
             }
         }
 
@@ -247,7 +281,15 @@ public class NormalRule extends RuleBase implements Rule {
         this.useSystemProperties = useSystemProperties;
     }
 
-    public void setAddProxyHeaders(List<String> addProxyHeaders) {
-        this.addProxyHeaders = addProxyHeaders;
+    public String getProxyHeadersStr() {
+        return this.proxyHeadersStr;
+    }
+
+    public void setProxyHeadersStr(String proxyHeadersStr) {
+        this.proxyHeadersStr = proxyHeadersStr;
+    }
+
+    public List<ProxyHeaders> getProxyHeaders() {
+        return this.proxyHeaders;
     }
 }

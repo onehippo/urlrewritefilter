@@ -73,7 +73,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
     private boolean dropCookies = true;
     private boolean followRedirects = true;
     private boolean useSystemProperties = false;
-    private List<String> addProxyHeaders = Collections.emptyList();
+    private List<ProxyHeaders> proxyHeaders = Collections.emptyList();
     private RewriteMatch rewriteMatch;
     private ServletContext targetContext = null;
 
@@ -91,7 +91,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
         this.dropCookies = ruleExecutionOutput.isDropCookies();
         this.followRedirects = ruleExecutionOutput.isFollowRedirects();
         this.useSystemProperties = ruleExecutionOutput.isUseSystemProperties();
-        this.addProxyHeaders = ruleExecutionOutput.getAddProxyHeaders();
+        this.proxyHeaders = ruleExecutionOutput.getProxyHeaders();
     }
 
     /**
@@ -297,7 +297,7 @@ public class NormalRewrittenUrl implements RewrittenUrl {
             if (hsResponse.isCommitted()) {
                 log.error("response is committed. cannot proxy " + target + ". Check that you haven't written to the response before.");
             } else {
-                RequestProxy.execute(target, hsRequest, hsResponse, dropCookies, followRedirects, useSystemProperties, addProxyHeaders);
+                RequestProxy.execute(target, hsRequest, hsResponse, dropCookies, followRedirects, useSystemProperties, proxyHeaders);
                 if (log.isTraceEnabled()) {
                     log.trace("Proxied request to " + target);
                 }
