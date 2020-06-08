@@ -40,7 +40,7 @@ import org.tuckey.web.testhelper.MockServletContext;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -103,8 +103,30 @@ public class ConfTest extends TestCase {
         assertTrue(rule5.isValid());
 
         NormalRule rule6 = (NormalRule) rules.get(6);
-        Run run = (Run) rule6.getRuns().get(0);
-        assertEquals("testValue", run.getInitParam("testName"));
+        Run run6 = rule6.getRuns().get(0);
+        assertEquals("testValue", run6.getInitParam("testName"));
+
+        NormalRule rule7 = (NormalRule) rules.get(7);
+        Run run7 = rule7.getRuns().get(0);
+        assertEquals("org.tuckey.web.filters.urlrewrite.test.TestRunObj", run7.getClassStr());
+        assertEquals("runWithParam", run7.getMethodStr());
+        assertEquals("runWithParam(int)", run7.getMethodSignature());
+
+        NormalRule rule8 = (NormalRule) rules.get(8);
+        assertEquals("forward", rule8.getToType());
+        assertTrue(rule8.isValid());
+
+        // Proxy all headers
+        NormalRule rule9 = (NormalRule) rules.get(9);
+        assertEquals("proxy", rule9.getToType());
+        assertEqualsInAnyOrder(Arrays.asList(ProxyHeaders.values()), rule9.getProxyHeaders());
+        assertTrue(rule9.isValid());
+
+        // Proxy host headers
+        NormalRule rule10 = (NormalRule) rules.get(10);
+        assertEquals("proxy", rule10.getToType());
+        assertEqualsInAnyOrder(Arrays.asList(ProxyHeaders.HOST, ProxyHeaders.X_FORWARDED_HOST), rule10.getProxyHeaders());
+        assertTrue(rule10.isValid());
 
         OutboundRule outboundRule = (OutboundRule) outboundRules.get(0);
         assertEquals("default encode on to test", outboundRule.getName());
@@ -150,5 +172,28 @@ public class ConfTest extends TestCase {
         assertFalse("a validation error should make the conf fail to load", conf.isOk());
     }
 
+    public void testConfBadProxy() {
+        Conf conf = new Conf(ConfTest.class.getResource("conf-test-bad-proxy.xml"));
+        assertFalse(conf.isOk());
+        List rules = conf.getRules();
+        NormalRule rule;
+
+        // Proxy invalid headers
+        rule = (NormalRule) rules.get(0);
+        assertEqualsInAnyOrder(Arrays.asList(ProxyHeaders.HOST, ProxyHeaders.X_FORWARDED_HOST), rule.getProxyHeaders());
+        assertFalse(rule.isValid());
+
+        // Attempt to assign proxy headers to invalid type
+        rule = (NormalRule) rules.get(1);
+        assertEquals(Collections.emptyList(), rule.getProxyHeaders());
+        assertFalse(rule.isValid());
+    }
+
+    private <T> void assertEqualsInAnyOrder(Collection<T> expected, Collection<T> actual) {
+        List<T> expectedList = new ArrayList<>(expected);
+        List<T> actualList = new ArrayList<>(actual);
+        expectedList.removeIf(actualList::remove);
+        assertTrue("The expected and actual collections differ in contents. Expected: " + expected + ". Actual: " + actual + ".", expectedList.isEmpty() && actualList.isEmpty());
+    }
 }
 

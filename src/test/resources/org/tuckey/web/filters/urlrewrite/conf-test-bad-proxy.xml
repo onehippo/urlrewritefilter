@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+        "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+
+<urlrewrite decode-using="utf-8">
+
+    <rule>
+        <name>Proxy Invalid Headers</name>
+        <from>/proxy/(.*)</from>
+        <to type="proxy" proxy-headers="Host,X-Forwarded-Host,Some-Invalid-Header">http://test.com/$1</to>
+    </rule>
+
+    <rule>
+        <name>Proxy Headers for Invalid To-Type</name>
+        <from>/proxy/(.*)</from>
+        <to type="forward" proxy-headers="Host,X-Forwarded-Host,Some-Invalid-Header">http://test.com/$1</to>
+    </rule>
+
+</urlrewrite>
+
