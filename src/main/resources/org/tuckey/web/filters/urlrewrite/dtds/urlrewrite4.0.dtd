@@ -54,19 +54,20 @@ type (request|session|response-header|cookie|content-type|charset|locale|status|
 name CDATA  #IMPLIED
 >
 
-<!-- Supported comma-delimited add-proxy-header values (case-sensitive): Host, X-Forwarded-By, X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto -->
 <!ELEMENT to (#PCDATA)>
-<!ATTLIST to
-type (redirect|temporary-redirect|permanent-redirect|pre-include|post-include|forward|passthrough|proxy) "forward"
-last (true|false) "false"
-qsappend (true|false) "false"
-drop-cookies (true|false) "false"
-followRedirects (true|false) "false"
-useSystemProperties (true|false) "false"
-add-proxy-headers CDATA #IMPLIED
-encode (true|false) #IMPLIED
-context CDATA  #IMPLIED
->
+<!ATTLIST to type (redirect|temporary-redirect|permanent-redirect|pre-include|post-include|forward|passthrough|proxy) "forward">
+<!ATTLIST to last (true|false) "false" >
+<!ATTLIST to qsappend (true|false) "false">
+<!ATTLIST to drop-cookies (true|false) "false" >
+<!ATTLIST to followRedirects (true|false) "false" >
+<!ATTLIST to useSystemProperties (true|false) "false" >
+<!--
+	The list of headers to be added to proxy requests, in addition to propagating the original request headers. Supported comma-delimited values:
+	All, Host, X-Forwarded-By, X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto
+-->
+<!ATTLIST to proxy-headers CDATA #IMPLIED >
+<!ATTLIST to encode (true|false) #IMPLIED >
+<!ATTLIST to context CDATA  #IMPLIED>
 
 <!--
 eg,
