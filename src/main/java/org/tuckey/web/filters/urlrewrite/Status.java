@@ -275,6 +275,14 @@ public class Status {
                 }
                 println(".</p>");
                 print("<p>This rule and it's conditions will use the <code>" + normalRule.getMatchType() + "</code> matching engine.</p>");
+                if (!normalRule.getProxyHeaders().isEmpty()) {
+                    println("<p>This rule will automatically assign the following proxy headers to all proxied requests:<ul>");
+                    for (ProxyHeaders header : normalRule.getProxyHeaders()){
+                        println("<li>" + header.getHeaderName() + "</li>");
+                    }
+                    println("</ul></p>");
+                }
+
                 showConditions(normalRule);
                 showSets(normalRule);
                 showRuns(normalRule);
