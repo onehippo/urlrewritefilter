@@ -63,7 +63,7 @@ name CDATA  #IMPLIED
 <!ATTLIST to useSystemProperties (true|false) "false" >
 <!--
 	The list of headers to be added to proxy requests, in addition to propagating the original request headers. Supported comma-delimited values:
-	All, Host, X-Forwarded-By, X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto
+	All, Host, X-Forwarded-By, X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto, X-Forwarded-Prefix
 -->
 <!ATTLIST to proxy-headers CDATA #IMPLIED >
 <!ATTLIST to encode (true|false) #IMPLIED >

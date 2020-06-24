@@ -32,7 +32,16 @@ public enum ProxyHeaders {
      *
      * @see <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-Proto">MDN: X-Forwarded-Proto</a>
      */
-    X_FORWARDED_PROTO("X-Forwarded-Proto");
+    X_FORWARDED_PROTO("X-Forwarded-Proto"),
+    /**
+     * When used, the system will track the original client-directed context URI for the request. This is the context prefix path for which cookies, redirects, links, and similar content should be written.
+     *
+     * @see <a href="https://github.com/spring-projects/spring-framework/blob/7cf1ccc41540752a16e370b5dd353b94108ebf22/spring-web/src/main/java/org/springframework/web/filter/ForwardedHeaderFilter.java#L346">ForwardedHeaderFilter (Spring's handling of X-Forwarded-Prefix)</a>
+     * @see <a href="https://docs.humio.com/integrations/proxies/nginx/">Humio NGINX reverse proxy integration (example X-Forwarded-Prefix usage)</a>
+     * @see <a href="https://docs.traefik.io/middlewares/stripprefix/">Traefik "StripPrefix" middleware (example X-Forwarded-Prefix usage)</a>
+     * @see <a href="https://github.com/envoyproxy/envoy/issues/5528">Requested X-Forwarded-Prefix for Envoy</a>
+     */
+    X_FORWARDED_PREFIX("X-Forwarded-Prefix");
 
     public static final String INCLUDE_ALL = "All";
 

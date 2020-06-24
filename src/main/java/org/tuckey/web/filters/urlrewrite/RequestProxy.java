@@ -326,6 +326,12 @@ public final class RequestProxy {
                     newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? originalRequest.getScheme() : existingHeaderValue;
                     setRequestHeader(request, header.getHeaderName(), newHeaderValue);
                     break;
+                case X_FORWARDED_PREFIX:
+                    // Use current request value or propagate existing header if present
+                    existingHeaderValue = originalRequest.getHeader(header.getHeaderName());
+                    newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? originalRequest.getContextPath() : existingHeaderValue;
+                    setRequestHeader(request, header.getHeaderName(), newHeaderValue);
+                    break;
                 default:
                     log.warn("Unexpected proxy header name of \"" + header.getHeaderName() + "\". This header name is not supported.");
             }
