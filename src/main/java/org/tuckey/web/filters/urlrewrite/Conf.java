@@ -34,20 +34,6 @@
  */
 package org.tuckey.web.filters.urlrewrite;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import javax.servlet.ServletContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.tuckey.web.filters.urlrewrite.gzip.GzipFilter;
 import org.tuckey.web.filters.urlrewrite.utils.Log;
 import org.tuckey.web.filters.urlrewrite.utils.ModRewriteConfLoader;
@@ -60,6 +46,19 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXParseException;
+
+import javax.servlet.ServletContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Configuration object for urlrewrite filter.
@@ -258,6 +257,7 @@ public class Conf {
                 if ("true".equalsIgnoreCase(getAttrValue(toNode, "encode"))) rule.setEncodeToUrl(true);
                 rule.setFollowRedirects("true".equals(getAttrValue(toNode, "followRedirects")));
                 rule.setUseSystemProperties("true".equals((getAttrValue(toNode, "useSystemProperties"))));
+                rule.setProxyHeadersStr(getAttrValue(toNode, "proxy-headers"));
 
                 processSetAttributes(ruleElement, rule);
 

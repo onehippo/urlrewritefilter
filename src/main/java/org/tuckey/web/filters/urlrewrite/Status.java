@@ -43,10 +43,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 /**
  * Outputs information about urlrewritefilter.
@@ -275,6 +272,16 @@ public class Status {
                 }
                 println(".</p>");
                 print("<p>This rule and it's conditions will use the <code>" + normalRule.getMatchType() + "</code> matching engine.</p>");
+                if (!normalRule.getProxyHeaders().isEmpty()) {
+                    println("<p>This rule will automatically assign the following proxy headers to all proxied requests:<ul>");
+                    List<ProxyHeaders> sortedProxyHeaders = normalRule.getProxyHeaders();
+                    sortedProxyHeaders.sort(Comparator.comparing(ProxyHeaders::getHeaderName));
+                    for (ProxyHeaders header : sortedProxyHeaders){
+                        println("<li>" + header.getHeaderName() + "</li>");
+                    }
+                    println("</ul></p>");
+                }
+
                 showConditions(normalRule);
                 showSets(normalRule);
                 showRuns(normalRule);

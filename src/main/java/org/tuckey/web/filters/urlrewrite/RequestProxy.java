@@ -38,7 +38,14 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -57,7 +64,9 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -75,11 +84,10 @@ public final class RequestProxy {
     private static final Log log = Log.getLog(RequestProxy.class);
     private static final Pattern NUMBER_PATTERN = Pattern.compile("[0-9]+");
 
-
     /**
      * This method performs the proxying of the request to the target address.
      * <p/>
-     * Cookies will not be forwarded to client.
+     * Cookies will not be forwarded to client and proxy headers (such as {@link ProxyHeaders#X_FORWARDED_FOR}) will not be added.
      *
      * @param target     The target address. Has to be a fully qualified address. The request is send as-is to this address.
      * @param hsRequest  The request data which should be send to the
@@ -87,19 +95,20 @@ public final class RequestProxy {
      * @throws java.io.IOException Passed on from the connection logic.
      */
     public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse) throws IOException {
-        execute(target, hsRequest, hsResponse, true, false, false);
+        execute(target, hsRequest, hsResponse, true, false, false, Collections.emptyList());
     }
 
     /**
      * This method performs the proxying of the request to the target address.
      *
-     * @param target      The target address. Has to be a fully qualified address. The request is send as-is to this address.
-     * @param hsRequest   The request data which should be send to the
-     * @param hsResponse  The response data which will contain the data returned by the proxied request to target.
-     * @param dropCookies Determinate whether cookies should be dropped (when {@code true}) or forwarded to client.
+     * @param target       The target address. Has to be a fully qualified address. The request is send as-is to this address.
+     * @param hsRequest    The request data which should be send to the
+     * @param hsResponse   The response data which will contain the data returned by the proxied request to target.
+     * @param dropCookies  Determinate whether cookies should be dropped (when {@code true}) or forwarded to client.
+     * @param proxyHeaders Additional proxy headers to be added to the proxied request to the target.
      * @throws java.io.IOException Passed on from the connection logic.
      */
-    public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse, boolean dropCookies, boolean followRedirects, boolean useSystemProperties) throws IOException {
+    public static void execute(final String target, final HttpServletRequest hsRequest, final HttpServletResponse hsResponse, boolean dropCookies, boolean followRedirects, boolean useSystemProperties, List<ProxyHeaders> proxyHeaders) throws IOException {
         if (log.isInfoEnabled()) {
             log.info("execute, target is " + target);
             log.info("response commit state: " + hsResponse.isCommitted());
@@ -131,7 +140,7 @@ public final class RequestProxy {
             log.info("config is " + config.toString());
         }
 
-        final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies);
+        final HttpRequestBase targetRequest = setupProxyRequest(hsRequest, url, dropCookies, proxyHeaders);
         if (targetRequest == null) {
             log.error("Unsupported request method found: " + hsRequest.getMethod());
             return;
@@ -214,7 +223,7 @@ public final class RequestProxy {
         return proxyHost;
     }
 
-    private static HttpRequestBase setupProxyRequest(final HttpServletRequest hsRequest, final URL targetUrl, boolean dropCookies) throws IOException {
+    private static HttpRequestBase setupProxyRequest(final HttpServletRequest hsRequest, final URL targetUrl, boolean dropCookies, List<ProxyHeaders> proxyHeaders) throws IOException {
         final String methodName = hsRequest.getMethod();
         final HttpRequestBase method;
         if ("POST".equalsIgnoreCase(methodName)) {
@@ -247,6 +256,7 @@ public final class RequestProxy {
             throw new IOException(e);
         }
 
+        // Propagate existing headers
         Enumeration<String> e = hsRequest.getHeaderNames();
         if (e != null) {
             while (e.hasMoreElements()) {
@@ -270,14 +280,62 @@ public final class RequestProxy {
                 Enumeration<String> values = hsRequest.getHeaders(headerName);
                 while (values.hasMoreElements()) {
                     String headerValue = values.nextElement();
-                    log.info("setting proxy request parameter:" + headerName + ", value: " + headerValue);
-                    method.addHeader(headerName, headerValue);
+                    addRequestHeader(method, headerName, headerValue);
                 }
             }
         }
 
+        setupProxyRequestHeaders(method, hsRequest, proxyHeaders);
+
         if (log.isInfoEnabled()) log.info("proxy query string " + method.getRequestLine());
         return method;
+    }
+
+    /**
+     * Sets up the specified proxy headers for the request. All headers included in {@code proxyHeaders} will be set on the given {@code request}.
+     */
+    private static void setupProxyRequestHeaders(HttpRequestBase request, HttpServletRequest originalRequest, List<ProxyHeaders> proxyHeaders) {
+        for (ProxyHeaders header : proxyHeaders) {
+            switch (header) {
+                case HOST:
+                    // Propagate existing header always, rather than generating a new Host value for the target host
+                    setRequestHeader(request, header.getHeaderName(), originalRequest.getServerName() + ":" + originalRequest.getServerPort());
+                    break;
+                case X_FORWARDED_BY:
+                    // Expected format: "X-Forwarded-By: <Proxy 1 Host>, <Proxy 2 Host>, ..."
+                    String existingHeaderValue = originalRequest.getHeader(header.getHeaderName());
+                    String currentHost = originalRequest.getServerName() + ":" + originalRequest.getServerPort();
+                    String newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? currentHost : existingHeaderValue + ", " + currentHost;
+                    setRequestHeader(request, header.getHeaderName(), newHeaderValue);
+                    break;
+                case X_FORWARDED_FOR:
+                    // Expected format: "X-Forwarded-For: <Real Client IP>, <Proxy 1 IP>, <Proxy 2 IP>, ..."
+                    existingHeaderValue = originalRequest.getHeader(header.getHeaderName());
+                    newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? originalRequest.getRemoteAddr() : existingHeaderValue + ", " + originalRequest.getRemoteAddr();
+                    setRequestHeader(request, header.getHeaderName(), newHeaderValue);
+                    break;
+                case X_FORWARDED_HOST:
+                    // Use current request value or propagate existing header if present
+                    existingHeaderValue = originalRequest.getHeader(header.getHeaderName());
+                    newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? originalRequest.getRemoteHost() + originalRequest.getRemotePort() : existingHeaderValue;
+                    setRequestHeader(request, header.getHeaderName(), newHeaderValue);
+                    break;
+                case X_FORWARDED_PROTO:
+                    // Use current request value or propagate existing header if present
+                    existingHeaderValue = originalRequest.getHeader(header.getHeaderName());
+                    newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? originalRequest.getScheme() : existingHeaderValue;
+                    setRequestHeader(request, header.getHeaderName(), newHeaderValue);
+                    break;
+                case X_FORWARDED_PREFIX:
+                    // Use current request value or propagate existing header if present
+                    existingHeaderValue = originalRequest.getHeader(header.getHeaderName());
+                    newHeaderValue = StringUtils.isBlank(existingHeaderValue) ? originalRequest.getContextPath() : existingHeaderValue;
+                    setRequestHeader(request, header.getHeaderName(), newHeaderValue);
+                    break;
+                default:
+                    log.warn("Unexpected proxy header name of \"" + header.getHeaderName() + "\". This header name is not supported.");
+            }
+        }
     }
 
     private static void setupResponseHeaders(CloseableHttpResponse httpResponse, HttpServletResponse hsResponse, boolean dropCookies) {
@@ -317,4 +375,19 @@ public final class RequestProxy {
             hsResponse.setStatus(httpResponse.getStatusLine().getStatusCode());
         }
     }
+
+    private static void addRequestHeader(HttpRequestBase request, String headerName, String headerValue) {
+        if (log.isInfoEnabled()) {
+            log.info("adding proxy request header: " + headerName + ", value: " + headerValue);
+        }
+        request.addHeader(headerName, headerValue);
+    }
+
+    private static void setRequestHeader(HttpRequestBase request, String headerName, String headerValue) {
+        if (log.isInfoEnabled()) {
+            log.info("setting proxy request header: " + headerName + ", value: " + headerValue);
+        }
+        request.setHeader(headerName, headerValue);
+    }
+
 }

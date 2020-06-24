@@ -38,6 +38,8 @@ import org.tuckey.web.filters.urlrewrite.extend.RewriteMatch;
 import org.tuckey.web.filters.urlrewrite.utils.Log;
 
 import javax.servlet.ServletContext;
+import java.util.Collections;
+import java.util.List;
 
 
 public class RuleExecutionOutput {
@@ -53,6 +55,7 @@ public class RuleExecutionOutput {
     private boolean dropCookies = true;
     private boolean followRedirects = false;
     private boolean useSystemProperties = false;
+    private List<ProxyHeaders> proxyHeaders = Collections.emptyList();
 
     /**
      * Will perform the action defined by the rule ie, redirect or passthrough.
@@ -195,6 +198,14 @@ public class RuleExecutionOutput {
 
     public boolean isUseSystemProperties() {
         return useSystemProperties;
+    }
+
+    public List<ProxyHeaders> getProxyHeaders() {
+        return this.proxyHeaders;
+    }
+
+    public void setProxyHeaders(List<ProxyHeaders> proxyHeaders) {
+        this.proxyHeaders = proxyHeaders;
     }
 }
 
