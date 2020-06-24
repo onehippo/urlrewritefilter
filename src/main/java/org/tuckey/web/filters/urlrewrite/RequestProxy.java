@@ -148,7 +148,7 @@ public final class RequestProxy {
 
             if (targetRequest instanceof HttpEntityEnclosingRequestBase) {
                 final InputStreamEntity entity = new InputStreamEntity(
-                        hsRequest.getInputStream(), hsRequest.getContentLength(), ContentType.create(hsRequest.getContentType()));
+                        hsRequest.getInputStream(), hsRequest.getContentLength(), ContentType.parse(hsRequest.getContentType()));
                 final HttpEntityEnclosingRequestBase entityEnclosingMethod = (HttpEntityEnclosingRequestBase) targetRequest;
                 entityEnclosingMethod.setEntity(entity);
                 requestParam = entityEnclosingMethod;
